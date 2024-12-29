@@ -1,8 +1,8 @@
 """Tests for asynchronous operations."""
 import pytest
 import asyncio
-from unittest.mock import patch, MagicMock
-from hunter.utils.fetcher import fetch_url
+from unittest.mock import patch, MagicMock, PropertyMock
+from hunter.utils.fetcher import fetch_url_async
 from hunter.utils.ai import AIEnhancer
 from hunter.utils.errors import HunterError
 
@@ -12,11 +12,11 @@ async def test_fetch_url_async_success():
     with patch('aiohttp.ClientSession.get') as mock_get:
         mock_response = MagicMock()
         mock_response.status = 200
-        mock_response.text = asyncio.Future()
-        mock_response.text.set_result("Test content")
+        mock_response.text = PropertyMock(return_value=asyncio.Future())
+        mock_response.text.return_value.set_result("Test content")
         mock_get.return_value.__aenter__.return_value = mock_response
 
-        content = await fetch_url("https://example.com")
+        content = await fetch_url_async("https://example.com")
         assert content == "Test content"
 
 @pytest.mark.asyncio
@@ -28,7 +28,7 @@ async def test_fetch_url_async_failure():
         mock_get.return_value.__aenter__.return_value = mock_response
 
         with pytest.raises(HunterError):
-            await fetch_url("https://example.com")
+            await fetch_url_async("https://example.com")
 
 @pytest.mark.asyncio
 async def test_enhance_content_async_success():
@@ -37,8 +37,8 @@ async def test_enhance_content_async_success():
     with patch('aiohttp.ClientSession.post') as mock_post:
         mock_response = MagicMock()
         mock_response.status = 200
-        mock_response.json = asyncio.Future()
-        mock_response.json.set_result({
+        mock_response.json = PropertyMock(return_value=asyncio.Future())
+        mock_response.json.return_value.set_result({
             "choices": [{
                 "message": {"content": "Enhanced content"}
             }],
@@ -51,7 +51,7 @@ async def test_enhance_content_async_success():
         mock_post.return_value.__aenter__.return_value = mock_response
 
         content = "Original content"
-        enhanced = await enhancer.enhance_content(content)
+        enhanced = await enhancer.enhance_content_async(content)
         assert enhanced == "Enhanced content"
 
 @pytest.mark.asyncio
@@ -61,8 +61,12 @@ async def test_enhance_content_async_failure():
     with patch('aiohttp.ClientSession.post') as mock_post:
         mock_response = MagicMock()
         mock_response.status = 500
+        mock_response.json = PropertyMock(return_value=asyncio.Future())
+        mock_response.json.return_value.set_result({
+            "error": "Internal server error"
+        })
         mock_post.return_value.__aenter__.return_value = mock_response
 
         content = "Original content"
-        with pytest.raises(HunterError):
-            await enhancer.enhance_content(content) 
+        result = await enhancer.enhance_content_async(content)
+        assert result == content  # Should return original content on failure 

@@ -155,8 +155,8 @@ MAIN_CONTENT_CLASSES = [
 
 # Text Cleanup Patterns
 TEXT_CLEANUP_PATTERNS = {
-    'numbered_suffix': re.compile(r'_\d+$'),  # Remove numbered suffixes like _1, _2
-    'trailing_hash': re.compile(r'#\s*$'),    # Remove trailing hash marks
+    'numbered_suffix': re.compile(r'_\d+'),   # Remove numbered suffixes like _1, _2
+    'trailing_hash': re.compile(r'#'),        # Remove hash marks
     'whitespace': re.compile(r'\s+'),         # Normalize whitespace
     'backtick_after': re.compile(r'`(\w)'),   # Add space after backtick
     'backtick_before': re.compile(r'(\w)`')   # Add space before backtick

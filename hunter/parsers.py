@@ -318,18 +318,19 @@ class ListParser(ContentParser):
             parent = parent.parent
         return depth
     
-    def format_list_item(self, element: Tag, depth: int = 0) -> str:
+    def format_list_item(self, element: Tag, depth: int = 0, index: int = 1) -> str:
         """Format a single list item with proper indentation.
         
         Args:
             element: List item element to format
             depth: Current nesting depth
+            index: Current item index (for ordered lists)
             
         Returns:
             str: Formatted list item
         """
         indent = '    ' * depth
-        marker = '1. ' if element.parent.name == 'ol' else '- '
+        marker = f"{index}. " if element.parent.name == 'ol' else '- '
         
         # Get the direct text content
         content = self.formatter.clean_content(element.get_text(strip=True))
@@ -367,8 +368,8 @@ class ListParser(ContentParser):
         depth = self.get_list_depth(element)
         items = []
         
-        for item in element.find_all('li', recursive=False):
-            items.append(self.format_list_item(item, depth))
+        for i, item in enumerate(element.find_all('li', recursive=False), start=1):
+            items.append(self.format_list_item(item, depth, i))
         
         content = '\n'.join(items)
         return ParseResult(

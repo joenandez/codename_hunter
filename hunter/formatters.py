@@ -68,8 +68,11 @@ class BaseFormatter:
         """
         if preserve_structure:
             lines = text.splitlines()
-            cleaned_lines = [re.sub(TEXT_CLEANUP_PATTERNS['numbered_suffix'], '', line.rstrip()) 
-                           for line in lines]
+            cleaned_lines = []
+            for line in lines:
+                # Remove numbered suffixes and trailing whitespace
+                line = re.sub(TEXT_CLEANUP_PATTERNS['numbered_suffix'], '', line.rstrip())
+                cleaned_lines.append(line)
             # Remove empty lines at start and end while preserving internal empty lines
             while cleaned_lines and not cleaned_lines[0].strip():
                 cleaned_lines.pop(0)
@@ -77,9 +80,13 @@ class BaseFormatter:
                 cleaned_lines.pop()
             return '\n'.join(cleaned_lines)
         else:
+            # Remove numbered suffixes first
             text = re.sub(TEXT_CLEANUP_PATTERNS['numbered_suffix'], '', text)
-            text = re.sub(TEXT_CLEANUP_PATTERNS['trailing_hash'], '', text.strip())
+            # Remove trailing hash marks
+            text = re.sub(TEXT_CLEANUP_PATTERNS['trailing_hash'], '', text)
+            # Normalize whitespace
             text = re.sub(TEXT_CLEANUP_PATTERNS['whitespace'], ' ', text)
+            # Add space around backticks
             text = re.sub(TEXT_CLEANUP_PATTERNS['backtick_after'], '` \\1', text)
             text = re.sub(TEXT_CLEANUP_PATTERNS['backtick_before'], '\\1 `', text)
             return text.strip()
@@ -114,7 +121,15 @@ class CodeFormatter(BaseFormatter):
         """
         if element is None:
             # Use general code detection patterns when no element context
-            return any(pattern.search(text) for pattern in CODE_DETECTION_PATTERNS)
+            text = text.strip()
+            # Check general patterns first
+            if any(pattern.search(text) for pattern in CODE_DETECTION_PATTERNS):
+                return True
+            # Then check language-specific patterns
+            for patterns in CODE_PATTERNS.values():
+                if any(pattern.search(text) for pattern in patterns):
+                    return True
+            return False
             
         # Check element structure
         if element.name == 'pre' and element.find('code'):
@@ -127,11 +142,13 @@ class CodeFormatter(BaseFormatter):
         if any(cls in ' '.join(classes) for cls in CODE_BLOCK_CLASSES):
             return True
             
-        # Check both general and language-specific patterns
+        # Check content patterns
+        text = text.strip()
+        # Check general patterns first
         if any(pattern.search(text) for pattern in CODE_DETECTION_PATTERNS):
             return True
             
-        # Check language-specific patterns
+        # Then check language-specific patterns
         for patterns in CODE_PATTERNS.values():
             if any(pattern.search(text) for pattern in patterns):
                 return True
@@ -182,7 +199,28 @@ class CodeFormatter(BaseFormatter):
             str: Formatted code block with markdown fence
         """
         # Clean the code while preserving structure
-        cleaned_code = self.clean_content(code, preserve_structure=True)
+        lines = code.splitlines()
+        # Find the minimum indentation level
+        min_indent = float('inf')
+        for line in lines:
+            if line.strip():  # Only consider non-empty lines
+                indent = len(line) - len(line.lstrip())
+                min_indent = min(min_indent, indent)
+        
+        # Remove the common indentation from all lines
+        if min_indent < float('inf'):
+            cleaned_lines = []
+            for line in lines:
+                if line.strip():  # Only dedent non-empty lines
+                    cleaned_lines.append(line[min_indent:])
+                else:
+                    cleaned_lines.append('')
+            cleaned_code = '\n'.join(cleaned_lines)
+        else:
+            cleaned_code = code
+        
+        # Clean the code further while preserving structure
+        cleaned_code = self.clean_content(cleaned_code, preserve_structure=True)
         
         # Add code fence with language
         return f"\n```{language}\n{cleaned_code}\n```\n"
