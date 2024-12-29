@@ -27,6 +27,8 @@ from dataclasses import dataclass
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from functools import wraps
+import time
+import threading
 
 from hunter.constants import (
     TOGETHER_API_KEY,
@@ -43,6 +45,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 console = Console()
+
+# Moon phase emojis for the spinner
+MOON_PHASES = ["🌑", "🌘", "🌗", "🌖", "🌕", "🌔", "🌓", "🌒", "🌑"]
 
 @dataclass
 class TokenInfo:
@@ -97,16 +102,42 @@ Return ONLY the raw markdown content."""
                 "content": f"Here is the markdown content to improve:\n\n{content}"
             }]
 
-            response = requests.post(
-                "https://api.together.xyz/v1/chat/completions",
-                headers=headers,
-                json={
-                    "model": TOGETHER_MODEL,
-                    "messages": messages,
-                    "max_tokens": TOGETHER_MAX_TOKENS,
-                    "temperature": TOGETHER_TEMPERATURE
-                }
-            )
+            with ProgressManager() as progress_mgr:
+                task_id = progress_mgr.add_task("Enhancing content with Together AI...")
+                
+                # Use an event to control the spinner thread
+                stop_spinner = threading.Event()
+                
+                # Start a background thread to animate the spinner
+                def animate_spinner():
+                    while not stop_spinner.is_set():
+                        try:
+                            progress_mgr.advance(task_id)
+                            time.sleep(0.05)  # Update every 50ms for smoother animation
+                        except Exception:
+                            break
+                
+                spinner_thread = threading.Thread(target=animate_spinner, daemon=True)
+                spinner_thread.start()
+                
+                try:
+                    # Make the API request
+                    response = requests.post(
+                        "https://api.together.xyz/v1/chat/completions",
+                        headers=headers,
+                        json={
+                            "model": TOGETHER_MODEL,
+                            "messages": messages,
+                            "max_tokens": TOGETHER_MAX_TOKENS,
+                            "temperature": TOGETHER_TEMPERATURE
+                        },
+                        timeout=30  # Add timeout to prevent hanging
+                    )
+                finally:
+                    # Signal the spinner to stop and wait for it
+                    stop_spinner.set()
+                    spinner_thread.join(timeout=0.1)  # Reduced timeout since we're using shorter sleep intervals
+                    progress_mgr.remove_task(task_id)
             
             if response.status_code == 200:
                 result = response.json()
@@ -296,3 +327,78 @@ def extract_content(url: str) -> str:
             content.append(f"{element.get_text().strip()}\n")
     
     return '\n'.join(content)
+
+class ProgressManager:
+    """Manages progress indicators for long-running operations.
+    
+    This class provides a context manager for showing progress indicators
+    during long-running operations. It uses Rich for beautiful console output
+    with a custom moon phase spinner.
+    
+    Example:
+        >>> with ProgressManager() as progress:
+        ...     progress.update("Step 1...")
+        ...     do_step_1()
+        ...     progress.update("Step 2...")
+        ...     do_step_2()
+    """
+    
+    def __init__(self):
+        """Initialize the progress manager with a Rich progress bar."""
+        self.progress = Progress(
+            TextColumn("{task.fields[spinner]}", justify="right"),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+            transient=True
+        )
+        self._frame = 0
+    
+    def __enter__(self) -> Progress:
+        """Start the progress display.
+        
+        Returns:
+            Progress: The progress object for updating status
+        """
+        self.progress.start()
+        return self
+    
+    def __exit__(self, exc_type: Optional[type], 
+                 exc_val: Optional[Exception], 
+                 exc_tb: Optional[Any]) -> None:
+        """Clean up the progress display.
+        
+        Args:
+            exc_type: Exception type if an error occurred
+            exc_val: Exception value if an error occurred
+            exc_tb: Exception traceback if an error occurred
+        """
+        self.progress.stop()
+    
+    def add_task(self, description: str, total: Optional[float] = None) -> int:
+        """Add a new task with the moon phase spinner.
+        
+        Args:
+            description: Task description to display
+            total: Optional total steps (None for indefinite)
+            
+        Returns:
+            int: Task ID
+        """
+        return self.progress.add_task(description, total=total, spinner=MOON_PHASES[0])
+    
+    def advance(self, task_id: int) -> None:
+        """Advance the moon phase spinner.
+        
+        Args:
+            task_id: The ID of the task to update
+        """
+        self._frame = (self._frame + 1) % len(MOON_PHASES)
+        self.progress.update(task_id, spinner=MOON_PHASES[self._frame])
+    
+    def remove_task(self, task_id: int) -> None:
+        """Remove a task from the progress display.
+        
+        Args:
+            task_id: The ID of the task to remove
+        """
+        self.progress.remove_task(task_id)
