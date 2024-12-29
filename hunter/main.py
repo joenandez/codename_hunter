@@ -191,13 +191,13 @@ def main() -> None:
             else:
                 console.print("[yellow]⚠️  AI enhancement skipped - no API key configured[/yellow]")
         
-        # Copy to clipboard by default unless disabled
+        # Display the result
+        console.print(Markdown(content))
+        
+        # Copy to clipboard by default unless disabled (moved to end)
         if not args.no_copy:
             pyperclip.copy(content)
             console.print("\n[green]✓[/green] Content has been copied to clipboard!")
-        
-        # Display the result
-        console.print(Markdown(content))
         
     except requests.exceptions.RequestException as e:
         console.print(f"[red]Error fetching URL:[/red] {str(e)}")
