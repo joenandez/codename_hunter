@@ -1,0 +1,8 @@
+.DS_Store
+project_docs/
+config.ini
+__pycache__/
+.pytest_cache/
+hunter/__pycache__/
+hunter.egg-info/
+test/__pycache__/
