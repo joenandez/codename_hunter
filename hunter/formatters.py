@@ -27,8 +27,9 @@ from hunter.constants import (
     TEXT_CLEANUP_PATTERNS,
     LANGUAGE_MAP,
     LANGUAGE_HINTS,
-    CODE_PATTERNS,
+    CODE_DETECTION_PATTERNS,
     CODE_BLOCK_CLASSES,
+    CODE_PATTERNS,
 )
 
 class BaseFormatter:
@@ -112,7 +113,8 @@ class CodeFormatter(BaseFormatter):
             bool: True if content appears to be code
         """
         if element is None:
-            return any(pattern.search(text) for pattern in CODE_PATTERNS)
+            # Use general code detection patterns when no element context
+            return any(pattern.search(text) for pattern in CODE_DETECTION_PATTERNS)
             
         # Check element structure
         if element.name == 'pre' and element.find('code'):
@@ -125,8 +127,16 @@ class CodeFormatter(BaseFormatter):
         if any(cls in ' '.join(classes) for cls in CODE_BLOCK_CLASSES):
             return True
             
-        # Check content patterns
-        return any(pattern.search(text) for pattern in CODE_PATTERNS)
+        # Check both general and language-specific patterns
+        if any(pattern.search(text) for pattern in CODE_DETECTION_PATTERNS):
+            return True
+            
+        # Check language-specific patterns
+        for patterns in CODE_PATTERNS.values():
+            if any(pattern.search(text) for pattern in patterns):
+                return True
+                
+        return False
 
     @classmethod
     def detect_language(cls, element: Optional[Union[Tag, NavigableString]]) -> str:
