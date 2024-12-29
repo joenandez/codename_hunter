@@ -1,6 +1,6 @@
 import pytest
 from bs4 import BeautifulSoup
-from src.formatters import BaseFormatter, CodeFormatter, LinkFormatter
+from hunter.formatters import BaseFormatter, CodeFormatter, LinkFormatter
 
 def test_base_formatter_clean_content():
     formatter = BaseFormatter()
