@@ -505,8 +505,8 @@ class ContentExtractor:
     
     def _clean_text(self, text: str) -> str:
         """Clean text content while preserving important formatting."""
-        base_parser = BaseParser()
-        return base_parser.clean_text(text)
+        parser = ContentParser()
+        return parser.clean_text(text)
     
     async def extract_from_url(self, url: str) -> List[ParseResult]:
         """Extract and parse content from a URL asynchronously."""
