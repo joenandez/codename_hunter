@@ -1,161 +1,123 @@
-# Twitter API SDK for TypeScript
+# Built-in React Hooks
 
-## Introduction
-A TypeScript SDK for the Twitter API. This library is built with TypeScript developers in mind, but it also works with JavaScript.
+## State Hooks
 
-Note: This SDK is in beta and is not ready for production
+- State lets a component ["remember" information like user input.](/learn/state-a-components-memory)
 
-You can find examples of using the client in the [examples/](/xdevplatform/twitter-api-typescript-sdk/blob/main/examples) directory
+  - [useState](/reference/react/useState) declares a state variable that you can update directly.
+  - [useReducer](/reference/react/useReducer) declares a state variable with the update logic inside a [reducer function.](/learn/extracting-state-logic-into-a-reducer)
 
-Note: Only Twitter API V2 is supported
-
-### Features
-- Full type information for requests and responses
-- OAuth2 support
-- Supports Node.js 14+.Doesn't work in browser environments due to the Twitter API not supporting CORS
-
-## Installing
 ```
-npm install twitter-api-sdk
+markdown
+    function ImageGallery() {
+        const [index, setIndex] = useState(0);
+        // ...
+    }
+
+    function ImageGallery() {
+        const [index, setIndex] = useState(0);
+        // ...
+    }
 ```
 
-## Client
+## Context Hooks
 
-To setup the client we will authenticate with a bearer-token as follows
-```typescript
-import { Client } from "twitter-api-sdk";
+- Context lets a component [receive information from distant parents without passing it as props.](/learn/passing-props-to-a-component)
 
-const client = new Client("MY-BEARER-TOKEN");
+  - [useContext](/reference/react/useContext) reads and subscribes to a context.
+
 ```
-For more information about authentication [go here](#authentication)
+    function Button() {
+        const theme = useContext(ThemeContext);
+        // ...
+    }
 
-## Examples
-
-### Consuming a Stream
-```typescript
-import { Client } from "twitter-api-sdk";
-
-const client = new Client(process.env.BEARER_TOKEN);
-
-async function main() {
-  const stream = client.tweets.sampleStream({
-    "tweet.fields": ["author_id"],
-  });
-  for await (const tweet of stream) {
-    console.log(tweet.data?.author_id);
-  }
-}
-
-main();
+    function Button() {
+        const theme = useContext(ThemeContext);
+        // ...
+    }
 ```
-### Getting a Tweet
-```typescript
-import { Client } from "twitter-api-sdk";
 
-const client = new Client(process.env.BEARER_TOKEN);
+## Ref Hooks
 
-async function main() {
-  const tweet = await client.tweets.findTweetById("20");
-  console.log(tweet.data.text);
-}
+- Refs let a component [hold some information that isn’t used for rendering,](/learn/referencing-values-with-refs) like a DOM node or a timeout ID.
 
-main();
+  - [useRef](/reference/react/useRef) declares a ref.
+  - [useImperativeHandle](/reference/react/useImperativeHandle) lets you customize the ref exposed by your component.
+
 ```
-## Streaming
+    function Form() {
+        const inputRef = useRef(null);
+        // ...
+    }
 
-For endpoints that return a stream you get sent back an Async Generator which you can iterate over:
-```typescript
-const stream = client.tweets.sampleStream();
-
-for await (const tweet of stream) {
-  console.log(tweet.data.text);
-}
+    function Form() {
+        const inputRef = useRef(null);
+        // ...
+    }
 ```
-## Pagination
 
-For endpoints that have pagination you can
-```typescript
-const followers = client.users.usersIdFollowers("20");
+## Effect Hooks
 
-for await (const page of followers) {
-  console.log(page.data);
-}
+- Effects let a component [connect to and synchronize with external systems.](/learn/synchronizing-with-effects)
 
-// This also works
-const followers = await client.users.usersIdFollowers("20");
-console.log(followers.data);
-```
-## Authentication
+  - [useEffect](/reference/react/useEffect) connects a component to an external system.
 
-This library supports App-only Bearer Token and OAuth 2.0
+```
+    function ChatRoom({ roomId }) {
+        useEffect(() => {
+            const connection = createConnection(roomId);
+            connection.connect();
+            return () => connection.disconnect();
+        }, [roomId]);
+        // ...
+    }
 
-You can see various examples on how to use the authentication in [examples/](/xdevplatform/twitter-api-typescript-sdk/blob/main/examples)
+    function ChatRoom({ roomId }) {
+        useEffect(() => {
+            const connection = createConnection(roomId);
+            connection.connect();
+            return () => connection.disconnect();
+        }, [roomId]);
+        // ...
+    }
+```
 
-## Getting Started
+Effects are an “escape hatch” from the React paradigm. Don’t use Effects to orchestrate the data flow of your application. If you’re not interacting with an external system, [you might not need an Effect.](/learn/you-might-not-need-an-effect)
 
-Make sure you turn on OAuth2 in your apps user authentication settings, and set the type of app to be either a confidential client or a public client.
+There are two rarely used variations of `useEffect` with differences in timing:
 
-### Creating a Public Auth Client
-```typescript
-const authClient = new auth.OAuth2User({
-  client_id: process.env.CLIENT_ID,
-  callback: "http://127.0.0.1:3000/callback",
-  scopes: ["tweet.read", "users.read", "offline.access"],
-});
+- [useLayoutEffect](/reference/react/useLayoutEffect) fires before the browser repaints the screen. You can measure layout here.
+- [useInsertionEffect](/reference/react/useInsertionEffect) fires before React makes changes to the DOM. Libraries can insert dynamic CSS here.
 
-const client = new Client(authClient);
-```
-### Creating a Confidential Auth Client
-```typescript
-const authClient = new auth.OAuth2User({
-  client_id: process.env.CLIENT_ID,
-  client_secret: process.env.CLIENT_SECRET,
-  callback: "http://127.0.0.1:3000/callback",
-  scopes: ["tweet.read", "users.read", "offline.access"],
-});
+## Performance Hooks
 
-const client = new Client(authClient);
-```
-### Generating an Authentication URL
-```typescript
-const authUrl = authClient.generateAuthURL({
-  code_challenge_method: "s256",
-});
-```
-### Requesting an Access Token
+- A common way to optimize re-rendering performance is to skip unnecessary work.
 
-Once the user has approved the OAuth flow, you will receive a`code`query parameter at the callback URL you specified.
-```typescript
-await authClient.requestAccessToken(code);
-```
-### Revoking an Access Token
-```typescript
-const response = await authClient.revokeAccessToken();
-```
-## Contributing
+  - [useMemo](/reference/react/useMemo) lets you cache the result of an expensive calculation.
+  - [useCallback](/reference/react/useCallback) lets you cache a function definition before passing it down to an optimized component.
 
-Note this is only for developers who want to contribute code to the SDK
+```
+    function TodoList({ todos, tab, theme }) {
+        const visibleTodos = useMemo(() => filterTodos(todos, tab), [todos, tab]);
+        // ...
+    }
+```
 
-### Clone the Repository
-```
-git clone https://github.com/twitterdev/twitter-api-typescript-sdk
-```
-### Running the Generation Script
+Sometimes, you can’t skip re-rendering because the screen actually needs to update. In that case, you can improve performance by separating blocking updates that must be synchronous (like typing into an input) from non-blocking updates which don’t need to block the user interface (like updating a chart).
 
-Generating the SDK with the [latest OpenAPI spec](https://api.twitter.com/2/openapi.json) . The version is any valid [SemVer](https://semver.org/) version
-```
-yarn generate 1.0.0
-```
-Generating the SDK with a local OpenAPI specification file.
-```
-yarn generate 1.0.0 --specFile ~/path/to/file/openapi.json
-```
-The files generated are put in the [src/gen](/xdevplatform/twitter-api-typescript-sdk/blob/main/src/gen) directory, these files are not edited manually.
+- [useTransition](/reference/react/useTransition) lets you mark a state transition as non-blocking and allow other updates to interrupt it.
+- [useDeferredValue](/reference/react/useDeferredValue) lets you defer updating a non-critical part of the UI and let other parts update first.
 
-### Building
-```
-yarn build
-```
-### Testing
-```
-yarn test
+## Other Hooks
+
+- These Hooks are mostly useful to library authors and aren’t commonly used in the application code.
+
+  - [useDebugValue](/reference/react/useDebugValue) lets you customize the label React DevTools displays for your custom Hook.
+  - [useId](/reference/react/useId) lets a component associate a unique ID with itself. Typically used with accessibility APIs.
+  - [useSyncExternalStore](/reference/react/useSyncExternalStore) lets a component subscribe to an external store.
+  - [useActionState](/reference/react/useActionState) allows you to manage state of actions.
+
+## Your own Hooks
+
+- You can also [define your own custom Hooks](/learn/reusing-logic-with-custom-hooks#extracting-your-own-custom-hook-from-a-component) as JavaScript functions.
