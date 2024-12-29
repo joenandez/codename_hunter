@@ -1,7 +1,7 @@
 """Tests for the parser module."""
 import pytest
 from bs4 import BeautifulSoup
-from src.parsers import (
+from hunter.parsers import (
     ContentType,
     HeadingParser,
     CodeBlockParser,

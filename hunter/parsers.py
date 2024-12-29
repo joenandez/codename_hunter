@@ -27,9 +27,10 @@ from bs4 import BeautifulSoup, Tag, NavigableString
 import requests
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from . import constants
-from .formatters import BaseFormatter, CodeFormatter, LinkFormatter
 from enum import Enum, auto
+
+from hunter import constants
+from hunter.formatters import BaseFormatter, CodeFormatter, LinkFormatter
 
 class ContentType(Enum):
     """Types of content that can be parsed.

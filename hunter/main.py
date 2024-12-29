@@ -25,38 +25,15 @@ import sys
 import os
 from rich.theme import Theme
 
-try:
-    # When installed via pip
-    from hunter.constants import (
-        TOGETHER_API_KEY,
-        TOGETHER_MODEL,
-        TOGETHER_MAX_TOKENS,
-        TOGETHER_TEMPERATURE,
-        OUTPUT_FORMAT,
-        CONSOLE_STYLE
-    )
-    from hunter.utils import extract_content, enhance_markdown_formatting
-except ImportError:
-    # When run directly from source
-    from .constants import (
-        TOGETHER_API_KEY,
-        TOGETHER_MODEL,
-        TOGETHER_MAX_TOKENS,
-        TOGETHER_TEMPERATURE,
-        OUTPUT_FORMAT,
-        CONSOLE_STYLE
-    )
-    from .utils import extract_content, enhance_markdown_formatting
-
-def check_api_status(console: Console) -> None:
-    """Check and display Together API status."""
-    console.print("\n[bold blue]API Status:[/bold blue]")
-    if TOGETHER_API_KEY:
-        masked_key = f"{TOGETHER_API_KEY[:4]}...{TOGETHER_API_KEY[-4:]}"
-        console.print(f"[green]✓ Found API key: {masked_key}[/green]")
-    else:
-        console.print("[yellow]⚠️  No API key found[/yellow]")
-        console.print("[yellow]Tip: Set TOGETHER_API_KEY environment variable or configure in ~/.config/hunter/config.ini[/yellow]")
+from hunter.constants import (
+    TOGETHER_API_KEY,
+    TOGETHER_MODEL,
+    TOGETHER_MAX_TOKENS,
+    TOGETHER_TEMPERATURE,
+    OUTPUT_FORMAT,
+    CONSOLE_STYLE
+)
+from hunter.utils import extract_content, enhance_markdown_formatting, print_api_status
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
@@ -107,13 +84,11 @@ def main() -> None:
         # Extract content
         content = extract_content(args.url)
         
-        # Check API status and enhance by default unless disabled
+        # Enhance by default unless disabled
         if not args.no_enhance:
-            check_api_status(console)
+            print_api_status(console)
             if TOGETHER_API_KEY:
                 content = enhance_markdown_formatting(content, TOGETHER_API_KEY)
-            else:
-                console.print("[yellow]⚠️  AI enhancement skipped - no API key configured[/yellow]")
         
         # Display the result
         console.print(Markdown(content))

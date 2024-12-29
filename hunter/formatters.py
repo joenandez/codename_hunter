@@ -22,7 +22,8 @@ Example:
 from typing import Optional, List, Union
 from bs4 import BeautifulSoup, Tag, NavigableString
 import re
-from .constants import (
+
+from hunter.constants import (
     TEXT_CLEANUP_PATTERNS,
     LANGUAGE_MAP,
     LANGUAGE_HINTS,

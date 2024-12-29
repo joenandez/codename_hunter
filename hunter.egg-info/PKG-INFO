@@ -130,7 +130,7 @@ pytest --cov=src tests/
 
 ## Configuration
 
-There are two ways to configure your Together API key for the enhancement feature:
+There are two ways to configure your Together API key:
 
 ### 1. Environment Variable (Recommended)
 ```bash
@@ -141,25 +141,33 @@ export TOGETHER_API_KEY='your_api_key'
 echo 'export TOGETHER_API_KEY="your_api_key"' >> ~/.zshrc
 ```
 
-### 2. Configuration File
-You can manually create or edit the configuration file:
+### 2. Environment File
+Create a `.env` file in the project root:
 ```bash
-# Location: ~/.config/hunter/config.ini
-[api]
-together_api_key = your_api_key
+# Create .env file
+cp .env.template .env
+# Edit with your API key
+nano .env
+```
+
+The `.env` file should contain:
+```
+TOGETHER_API_KEY=your_api_key_here
 ```
 
 ### Configuration Priority
 1. Environment variables (highest priority)
-2. User config file (`~/.config/hunter/config.ini`)
+2. `.env` file
+3. Default values in `constants.py`
 
-A template configuration file with all available options is provided in `config.ini`.
+### Other Settings
+The following settings have sensible defaults in `constants.py`:
+- Output format (default: markdown)
+- Console theme (default: dark)
 
-### Other Configuration Options
-- `HUNTER_OUTPUT_FORMAT`: Output format (default: markdown)
+These can be overridden using environment variables if needed:
+- `HUNTER_OUTPUT_FORMAT`: Output format
 - `HUNTER_CONSOLE_STYLE`: Console theme (dark/light)
-
-See `config.ini` for all configuration options and their documentation.
 
 ## Performance
 

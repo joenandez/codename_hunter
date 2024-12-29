@@ -27,24 +27,14 @@ from dataclasses import dataclass
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from functools import wraps
-try:
-    # When installed via pip
-    from hunter.constants import (
-        TOGETHER_API_KEY,
-        TOGETHER_MODEL,
-        TOGETHER_MAX_TOKENS,
-        TOGETHER_TEMPERATURE,
-        TOGETHER_PRICE_PER_MILLION_TOKENS
-    )
-except ImportError:
-    # When run directly from source
-    from .constants import (
-        TOGETHER_API_KEY,
-        TOGETHER_MODEL,
-        TOGETHER_MAX_TOKENS,
-        TOGETHER_TEMPERATURE,
-        TOGETHER_PRICE_PER_MILLION_TOKENS
-    )
+
+from hunter.constants import (
+    TOGETHER_API_KEY,
+    TOGETHER_MODEL,
+    TOGETHER_MAX_TOKENS,
+    TOGETHER_TEMPERATURE,
+    TOGETHER_PRICE_PER_MILLION_TOKENS
+)
 
 # Configure logging
 logging.basicConfig(
@@ -205,47 +195,20 @@ class HunterError(Exception):
     """
     pass
 
-class ProgressManager:
-    """Manages progress indicators for long-running operations.
+def print_api_status(console: Console) -> None:
+    """Print the API configuration status with appropriate decoration.
     
-    This class provides a context manager for showing progress indicators
-    during long-running operations. It uses Rich for beautiful console output.
-    
-    Example:
-        >>> with ProgressManager() as progress:
-        ...     progress.update("Step 1...")
-        ...     do_step_1()
-        ...     progress.update("Step 2...")
-        ...     do_step_2()
+    Args:
+        console: Rich console instance for status display
     """
-    
-    def __init__(self):
-        """Initialize the progress manager with a Rich progress bar."""
-        self.progress = Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
-        )
-    
-    def __enter__(self) -> Progress:
-        """Start the progress display.
-        
-        Returns:
-            Progress: The progress object for updating status
-        """
-        return self.progress
-    
-    def __exit__(self, exc_type: Optional[type], 
-                 exc_val: Optional[Exception], 
-                 exc_tb: Optional[Any]) -> None:
-        """Clean up the progress display.
-        
-        Args:
-            exc_type: Exception type if an error occurred
-            exc_val: Exception value if an error occurred
-            exc_tb: Exception traceback if an error occurred
-        """
-        self.progress.stop()
+    if TOGETHER_API_KEY:
+        console.print("[green]✓ Together AI API key configured[/green]")
+    else:
+        console.print("[yellow]⚠️  Together AI API key not configured[/yellow]")
+        console.print("\nTo configure the API key, either:")
+        console.print("1. Add TOGETHER_API_KEY to your environment variables")
+        console.print("2. Create a .env file with TOGETHER_API_KEY=your_key")
+        console.print("\nGet your API key at: https://api.together.xyz/settings/api-keys\n")
 
 @error_handler
 def fetch_url(url: str) -> str:
@@ -270,8 +233,7 @@ def fetch_url(url: str) -> str:
 def validate_config(config: Dict[str, Any]) -> bool:
     """Validate configuration settings.
     
-    Checks that all required configuration fields are present in the
-    provided configuration dictionary.
+    Checks that the API key is present and valid in the configuration.
     
     Args:
         config: Configuration dictionary to validate
@@ -280,11 +242,10 @@ def validate_config(config: Dict[str, Any]) -> bool:
         bool: True if configuration is valid, False otherwise
         
     Example:
-        >>> config = {'api_key': 'abc123', 'output_format': 'markdown'}
+        >>> config = {'TOGETHER_API_KEY': 'abc123'}
         >>> is_valid = validate_config(config)
     """
-    required_fields = ['api_key', 'output_format']
-    return all(field in config for field in required_fields)
+    return bool(config.get('TOGETHER_API_KEY'))
 
 def enhance_markdown_formatting(content: str, api_key: str) -> str:
     """Enhance markdown formatting using AI.

@@ -1,6 +1,9 @@
 .DS_Store
 project_docs/
-config.ini
+# Configuration files
+config/config.ini
+~/.config/hunter/config.ini
+.env
 __pycache__/
 .pytest_cache/
 hunter/__pycache__/

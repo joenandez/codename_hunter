@@ -14,8 +14,12 @@ from pathlib import Path
 import configparser
 import os
 import logging
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configuration paths
 CONFIG_DIR = Path.home() / '.config' / 'hunter'

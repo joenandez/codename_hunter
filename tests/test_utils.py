@@ -1,7 +1,7 @@
 """Tests for utility functions."""
 import pytest
 from unittest.mock import patch, MagicMock
-from src.utils import (
+from hunter.utils import (
     AIEnhancer,
     TokenInfo,
     HunterError,

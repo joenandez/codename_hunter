@@ -115,9 +115,9 @@ pytest --cov=src tests/
 
 ## Configuration
 
-There are three ways to configure your Together API key and other settings:
+There are two ways to configure your Together API key:
 
-### 1. Environment Variable (Highest Priority)
+### 1. Environment Variable (Recommended)
 ```bash
 # Set for current session
 export TOGETHER_API_KEY='your_api_key'
@@ -126,50 +126,33 @@ export TOGETHER_API_KEY='your_api_key'
 echo 'export TOGETHER_API_KEY="your_api_key"' >> ~/.zshrc
 ```
 
-### 2. Configuration Files
-The system checks configuration files in the following order:
-
-1. User config: `~/.config/hunter/config.ini`
-2. Local config: `./config/config.ini`
-3. Default config: `./config/config.ini.template`
-
-To set up your configuration:
+### 2. Environment File
+Create a `.env` file in the project root:
 ```bash
-# Option 1: User-specific configuration (recommended)
-mkdir -p ~/.config/hunter
-cp config/config.ini.template ~/.config/hunter/config.ini
-nano ~/.config/hunter/config.ini
+# Create .env file
+cp .env.template .env
+# Edit with your API key
+nano .env
+```
 
-# Option 2: Local project configuration
-cp config/config.ini.template config/config.ini
-nano config/config.ini
+The `.env` file should contain:
+```
+TOGETHER_API_KEY=your_api_key_here
 ```
 
 ### Configuration Priority
 1. Environment variables (highest priority)
-2. User config file (`~/.config/hunter/config.ini`)
-3. Local config file (`./config/config.ini`)
-4. Default config file (`./config/config.ini.template`)
+2. `.env` file
+3. Default values in `constants.py`
 
-### Other Configuration Options
-All configuration options can be set via environment variables or config files:
+### Other Settings
+The following settings have sensible defaults in `constants.py`:
+- Output format (default: markdown)
+- Console theme (default: dark)
 
-Environment Variables:
-- `TOGETHER_API_KEY`: Your Together.ai API key
-- `HUNTER_OUTPUT_FORMAT`: Output format (default: markdown)
+These can be overridden using environment variables if needed:
+- `HUNTER_OUTPUT_FORMAT`: Output format
 - `HUNTER_CONSOLE_STYLE`: Console theme (dark/light)
-
-Config File Sections:
-```ini
-[api]
-together_api_key = your_api_key
-
-[output]
-format = markdown
-style = dark
-```
-
-See `config/config.ini.template` for all configuration options and their documentation.
 
 ## Performance
 
