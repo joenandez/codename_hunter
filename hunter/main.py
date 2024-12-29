@@ -23,6 +23,7 @@ from bs4 import BeautifulSoup
 import argparse
 import sys
 import os
+import logging
 from rich.theme import Theme
 
 from hunter.constants import (
@@ -33,7 +34,13 @@ from hunter.constants import (
     OUTPUT_FORMAT,
     CONSOLE_STYLE
 )
-from hunter.utils import extract_content, enhance_markdown_formatting, print_api_status
+from hunter.utils import (
+    extract_content,
+    enhance_markdown_formatting,
+    print_api_status,
+    HunterError,
+    logger
+)
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
@@ -71,39 +78,62 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     """Main entry point for the application."""
-    args = parse_args()
-    theme = Theme({}) if CONSOLE_STYLE == 'light' else Theme({
-        "info": "cyan",
-        "warning": "yellow",
-        "error": "red bold",
-        "success": "green"
-    })
-    console = Console(theme=theme)
+    logger.info("Starting Hunter application")
     
     try:
-        # Extract content
-        content = extract_content(args.url)
+        args = parse_args()
+        logger.debug(f"Parsed arguments: {vars(args)}")
         
-        # Enhance by default unless disabled
-        if not args.no_enhance:
-            print_api_status(console)
-            if TOGETHER_API_KEY:
-                content = enhance_markdown_formatting(content, TOGETHER_API_KEY)
+        theme = Theme({}) if CONSOLE_STYLE == 'light' else Theme({
+            "info": "cyan",
+            "warning": "yellow",
+            "error": "red bold",
+            "success": "green"
+        })
+        console = Console(theme=theme)
         
-        # Display the result
-        console.print(Markdown(content))
-        
-        # Copy to clipboard by default unless disabled
-        if not args.no_copy:
-            pyperclip.copy(content)
-            console.print("\n[green]✓[/green] Content has been copied to clipboard!")
-        
-    except requests.exceptions.RequestException as e:
-        console.print(f"[red]Error fetching URL:[/red] {str(e)}")
-        sys.exit(1)
+        try:
+            # Extract content
+            logger.info(f"Processing URL: {args.url}")
+            content = extract_content(args.url)
+            
+            # Enhance by default unless disabled
+            if not args.no_enhance:
+                logger.debug("Checking API status before enhancement")
+                print_api_status(console)
+                if TOGETHER_API_KEY:
+                    logger.info("Enhancing content with AI")
+                    content = enhance_markdown_formatting(content, TOGETHER_API_KEY)
+                else:
+                    logger.warning("Skipping enhancement: No API key available")
+            
+            # Display the result
+            console.print(Markdown(content))
+            
+            # Copy to clipboard by default unless disabled
+            if not args.no_copy:
+                logger.debug("Copying content to clipboard")
+                pyperclip.copy(content)
+                console.print("\n[green]✓[/green] Content has been copied to clipboard!")
+                
+            logger.info("URL processing completed successfully")
+                
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Network error while fetching URL: {str(e)}")
+            console.print(f"[red]Error fetching URL:[/red] {str(e)}")
+            sys.exit(1)
+        except HunterError as e:
+            logger.error(f"Hunter-specific error: {str(e)}")
+            console.print(f"[red]Error:[/red] {str(e)}")
+            sys.exit(1)
+            
     except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        console = Console()
         console.print(f"[red]Unexpected error:[/red] {str(e)}")
         sys.exit(1)
+    finally:
+        logger.info("Hunter application shutting down")
 
 if __name__ == "__main__":
     main()
