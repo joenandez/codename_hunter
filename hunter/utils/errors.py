@@ -7,6 +7,7 @@ for consistent error management across the application.
 from typing import TypeVar, Callable, Any, cast
 from functools import wraps
 import logging
+import asyncio
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -60,6 +61,7 @@ def async_error_handler(func: F) -> F:
     """Decorator for consistent async error handling.
     
     Similar to error_handler but designed for async functions.
+    Handles cancellation gracefully with a user-friendly message.
     
     Args:
         func: The async function to wrap with error handling
@@ -78,6 +80,13 @@ def async_error_handler(func: F) -> F:
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return await func(*args, **kwargs)
+        except (asyncio.CancelledError, KeyboardInterrupt):
+            logger.info("\n✨ Request cancelled by user")
+            # Get the first argument (self) and check if it has a default return value
+            if args and hasattr(args[0], 'default_return_value'):
+                return args[0].default_return_value
+            # For methods that don't have a default, return None
+            return None
         except Exception as e:
             logger.error(f"Error in async {func.__name__}: {str(e)}")
             raise HunterError(f"Operation failed: {str(e)}")
