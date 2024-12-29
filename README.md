@@ -29,39 +29,38 @@ pip install git+https://github.com/yourusername/codename_hunter.git
 
 Basic usage:
 ```bash
-# Process a URL (with AI enhancement and clipboard copy by default)
+# Process a URL (simplest form)
+hunter https://example.com
+
+# Alternative forms also supported:
 hunter url https://example.com
+hunter uri https://example.com
 
-# Or using Python module form (when installed locally)
+# Or using Python module form
+python -m hunter https://example.com
 python -m hunter url https://example.com
-
-# Configure API key (required for AI enhancement)
-hunter config --set-api-key
-
-# Show current configuration
-hunter config --show
 ```
 
-Options for URL processing:
+Options:
 - `--no-enhance`: Disable AI enhancement
 - `--no-copy`: Disable clipboard copy
 
 Examples:
 ```bash
 # Extract and format content (with defaults)
-hunter url https://example.com/article
+hunter https://example.com/article
 
 # Process without AI enhancement
-hunter url https://example.com/article --no-enhance
+hunter https://example.com/article --no-enhance
 
 # Process without copying to clipboard
-hunter url https://example.com/article --no-copy
+hunter https://example.com/article --no-copy
 
-# Process without both enhancement and clipboard
-hunter url https://example.com/article --no-enhance --no-copy
-
-# Set up API key interactively
+# Configure API key (required for AI enhancement)
 hunter config --set-api-key
+
+# Show current configuration
+hunter config --show
 ```
 
 ## Development

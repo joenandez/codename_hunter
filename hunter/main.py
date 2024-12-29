@@ -127,19 +127,33 @@ def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Extract and enhance markdown content from web pages.",
-        epilog="Example: hunter https://example.com -e -c"
+        epilog="Example: hunter https://example.com"
     )
     
-    # Create subparsers for different modes
-    subparsers = parser.add_subparsers(dest='command')
-    
-    # URL processing mode (default)
-    url_parser = subparsers.add_parser('url', help='Process a URL (default mode)')
-    url_parser.add_argument("url", help="URL to process")
-    url_parser.add_argument("--no-enhance", action="store_true",
+    # First, check if the first argument is a URL
+    if len(sys.argv) > 1 and '://' in sys.argv[1]:
+        # Add main arguments
+        parser.add_argument("url", help="URL to process")
+        parser.add_argument("--no-enhance", action="store_true",
                            help="Disable AI enhancement")
-    url_parser.add_argument("--no-copy", action="store_true",
+        parser.add_argument("--no-copy", action="store_true",
                            help="Disable clipboard copy")
+        args = parser.parse_args()
+        # Explicitly set command for direct URL usage
+        args.command = 'url'
+        return args
+    
+    # If not a URL, use subcommands
+    subparsers = parser.add_subparsers(dest='command', required=True)
+    
+    # URL processing mode (allow both 'url' and 'uri' commands)
+    for cmd in ['url', 'uri']:
+        url_parser = subparsers.add_parser(cmd, help='Process a URL')
+        url_parser.add_argument("url", help="URL to process")
+        url_parser.add_argument("--no-enhance", action="store_true",
+                               help="Disable AI enhancement")
+        url_parser.add_argument("--no-copy", action="store_true",
+                               help="Disable clipboard copy")
     
     # Config mode
     config_parser = subparsers.add_parser('config', help='Configure settings')
@@ -148,17 +162,7 @@ def parse_args() -> argparse.Namespace:
     config_parser.add_argument("--show", action="store_true",
                               help="Show current configuration")
     
-    args = parser.parse_args()
-    
-    # If no command is specified but a URL-like argument is present, treat it as URL mode
-    if not args.command and len(sys.argv) > 1 and '://' in sys.argv[1]:
-        return parser.parse_args(['url'] + sys.argv[1:])
-    
-    # Validate arguments
-    if not args.command:
-        parser.error("Please provide a URL to process or use 'config' command")
-    
-    return args
+    return parser.parse_args()
 
 def main() -> None:
     """Main entry point for the application."""

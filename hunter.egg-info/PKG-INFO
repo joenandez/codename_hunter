@@ -33,7 +33,7 @@ A powerful tool for extracting and enhancing markdown content from web pages.
 git clone https://github.com/yourusername/codename_hunter.git
 cd codename_hunter
 
-# Install globally
+# Install in development mode
 pip install -e .
 
 # Or install directly from git
@@ -45,7 +45,10 @@ pip install git+https://github.com/yourusername/codename_hunter.git
 Basic usage:
 ```bash
 # Process a URL (with AI enhancement and clipboard copy by default)
-hunter https://example.com
+hunter url https://example.com
+
+# Or using Python module form (when installed locally)
+python -m hunter url https://example.com
 
 # Configure API key (required for AI enhancement)
 hunter config --set-api-key
@@ -61,16 +64,16 @@ Options for URL processing:
 Examples:
 ```bash
 # Extract and format content (with defaults)
-hunter https://example.com/article
+hunter url https://example.com/article
 
 # Process without AI enhancement
-hunter --no-enhance https://example.com/article
+hunter url https://example.com/article --no-enhance
 
 # Process without copying to clipboard
-hunter --no-copy https://example.com/article
+hunter url https://example.com/article --no-copy
 
 # Process without both enhancement and clipboard
-hunter --no-enhance --no-copy https://example.com/article
+hunter url https://example.com/article --no-enhance --no-copy
 
 # Set up API key interactively
 hunter config --set-api-key
@@ -81,16 +84,17 @@ hunter config --set-api-key
 ### Project Structure
 
 ```
-src/
+hunter/
 ├── __init__.py
-├── main.py          # Main entry point and CLI
-├── constants.py     # Configuration and constants
-├── formatters.py    # Content formatting
-├── parsers.py       # Content extraction
-└── utils.py         # Utilities and helpers
+├── __main__.py     # Module execution entry point
+├── main.py         # Main entry point and CLI
+├── constants.py    # Configuration and constants
+├── formatters.py   # Content formatting
+├── parsers.py      # Content extraction
+└── utils.py        # Utilities and helpers
 
 tests/
-└── test_*.py        # Test files
+└── test_*.py       # Test files
 ```
 
 ### Architecture
