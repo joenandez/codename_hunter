@@ -1,7 +1,7 @@
 """Tests for asynchronous operations."""
 import pytest
 import asyncio
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import patch, MagicMock, PropertyMock, AsyncMock
 from hunter.utils.fetcher import fetch_url_async
 from hunter.utils.ai import AIEnhancer
 from hunter.utils.errors import HunterError
@@ -35,12 +35,12 @@ async def test_enhance_content_async_success():
     """Test successful content enhancement."""
     enhancer = AIEnhancer()
     with patch('aiohttp.ClientSession.post') as mock_post:
+        # Create a mock response with success status
         mock_response = MagicMock()
         mock_response.status = 200
         
-        # Create a future for the response
-        future = asyncio.Future()
-        future.set_result({
+        # Mock the json response
+        response_data = {
             "choices": [{
                 "message": {"content": "Enhanced content"}
             }],
@@ -49,8 +49,8 @@ async def test_enhance_content_async_success():
                 "prompt_tokens": 50,
                 "completion_tokens": 50
             }
-        })
-        mock_response.json.return_value = future
+        }
+        mock_response.json = AsyncMock(return_value=response_data)
         mock_post.return_value.__aenter__.return_value = mock_response
 
         content = "Original content"
@@ -62,12 +62,10 @@ async def test_enhance_content_async_failure():
     """Test content enhancement failure."""
     enhancer = AIEnhancer()
     with patch('aiohttp.ClientSession.post') as mock_post:
+        # Create a mock response with error status
         mock_response = MagicMock()
         mock_response.status = 500
-        mock_response.json = PropertyMock(return_value=asyncio.Future())
-        mock_response.json.return_value.set_result({
-            "error": "Internal server error"
-        })
+        mock_response.json = AsyncMock(return_value={"error": "Internal server error"})
         mock_post.return_value.__aenter__.return_value = mock_response
 
         content = "Original content"
