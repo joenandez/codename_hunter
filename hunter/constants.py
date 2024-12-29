@@ -62,6 +62,9 @@ TOGETHER_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
 TOGETHER_MAX_TOKENS = 4000
 TOGETHER_TEMPERATURE = 0.1
 
+# Pricing (USD per million tokens)
+TOGETHER_PRICE_PER_MILLION_TOKENS = 0.2
+
 # Output Configuration
 OUTPUT_FORMAT: Literal['markdown'] = get_config_value('output', 'format', 'markdown')
 CONSOLE_STYLE: Literal['dark', 'light'] = get_config_value('output', 'style', 'dark')

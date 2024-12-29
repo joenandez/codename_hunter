@@ -33,7 +33,8 @@ try:
         TOGETHER_API_KEY,
         TOGETHER_MODEL,
         TOGETHER_MAX_TOKENS,
-        TOGETHER_TEMPERATURE
+        TOGETHER_TEMPERATURE,
+        TOGETHER_PRICE_PER_MILLION_TOKENS
     )
 except ImportError:
     # When run directly from source
@@ -41,7 +42,8 @@ except ImportError:
         TOGETHER_API_KEY,
         TOGETHER_MODEL,
         TOGETHER_MAX_TOKENS,
-        TOGETHER_TEMPERATURE
+        TOGETHER_TEMPERATURE,
+        TOGETHER_PRICE_PER_MILLION_TOKENS
     )
 
 # Configure logging
@@ -119,6 +121,17 @@ Return ONLY the raw markdown content."""
             if response.status_code == 200:
                 result = response.json()
                 if "choices" in result and result["choices"]:
+                    # Log token usage and cost information
+                    if "usage" in result:
+                        usage = result["usage"]
+                        total_tokens = usage.get("total_tokens", 0)
+                        cost = (total_tokens / 1_000_000) * TOGETHER_PRICE_PER_MILLION_TOKENS
+                        logger.info(
+                            f"Token usage - Prompt: {usage.get('prompt_tokens', 0)}, "
+                            f"Completion: {usage.get('completion_tokens', 0)}, "
+                            f"Total: {total_tokens} "
+                            f"(Cost: ${cost:.4f})"
+                        )
                     return result["choices"][0]["message"]["content"].strip()
             
             logger.error(f"AI enhancement failed: {response.status_code}")
@@ -127,26 +140,21 @@ Return ONLY the raw markdown content."""
         except Exception as e:
             logger.error(f"AI enhancement failed: {str(e)}")
             return content
-    
-    def calculate_tokens(self, text: str) -> TokenInfo:
-        """Calculate token usage for the given text.
-        
-        Uses a simplified token calculation method based on word count.
-        For production use, this should be replaced with a more accurate
-        tokenizer matching the AI model being used.
+
+    def get_token_usage(self, response_json: Dict[str, Any]) -> TokenInfo:
+        """Extract token usage information from API response.
         
         Args:
-            text: The text to calculate tokens for
+            response_json: The JSON response from Together API
             
         Returns:
             TokenInfo: Token usage information
         """
-        # Simplified token calculation (approximately 4 chars per token)
-        total = len(text) // 4
+        usage = response_json.get("usage", {})
         return TokenInfo(
-            total_tokens=total,
-            content_tokens=total,
-            remaining_tokens=TOGETHER_MAX_TOKENS - total
+            total_tokens=usage.get("total_tokens", 0),
+            content_tokens=usage.get("completion_tokens", 0),
+            remaining_tokens=TOGETHER_MAX_TOKENS - usage.get("total_tokens", 0)
         )
 
 # Type variable for the error handler decorator
