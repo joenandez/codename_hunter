@@ -1,0 +1,2 @@
+[console_scripts]
+hunter = hunter.main:main

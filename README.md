@@ -1,0 +1,186 @@
+# Codename Hunter
+
+A powerful tool for extracting and enhancing markdown content from web pages.
+
+## Features
+
+- 🔍 Smart content extraction from web pages
+- 🎨 Markdown formatting with code block language detection
+- 🤖 Optional AI-powered content enhancement
+- 📋 Clipboard integration
+- 📊 Progress tracking
+- 🎯 Rich console output
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/codename_hunter.git
+cd codename_hunter
+
+# Install in development mode
+pip install -e .
+
+# Or install directly from git
+pip install git+https://github.com/yourusername/codename_hunter.git
+```
+
+## Usage
+
+Basic usage:
+```bash
+# Process a URL (with AI enhancement and clipboard copy by default)
+hunter url https://example.com
+
+# Or using Python module form (when installed locally)
+python -m hunter url https://example.com
+
+# Configure API key (required for AI enhancement)
+hunter config --set-api-key
+
+# Show current configuration
+hunter config --show
+```
+
+Options for URL processing:
+- `--no-enhance`: Disable AI enhancement
+- `--no-copy`: Disable clipboard copy
+
+Examples:
+```bash
+# Extract and format content (with defaults)
+hunter url https://example.com/article
+
+# Process without AI enhancement
+hunter url https://example.com/article --no-enhance
+
+# Process without copying to clipboard
+hunter url https://example.com/article --no-copy
+
+# Process without both enhancement and clipboard
+hunter url https://example.com/article --no-enhance --no-copy
+
+# Set up API key interactively
+hunter config --set-api-key
+```
+
+## Development
+
+### Project Structure
+
+```
+hunter/
+├── __init__.py
+├── __main__.py     # Module execution entry point
+├── main.py         # Main entry point and CLI
+├── constants.py    # Configuration and constants
+├── formatters.py   # Content formatting
+├── parsers.py      # Content extraction
+└── utils.py        # Utilities and helpers
+
+tests/
+└── test_*.py       # Test files
+```
+
+### Architecture
+
+The project follows these key architectural patterns:
+1. Constants Separation
+2. Formatter Chain
+3. Parser Hierarchy
+4. Content Flow Pipeline
+5. Error Handling
+6. Progress Tracking
+7. AI Enhancement
+8. Testing Strategy
+9. CLI Interface
+10. Main Application Facade
+
+See `patterns.md` for detailed architecture documentation.
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_parsers.py
+
+# Run with coverage
+pytest --cov=src tests/
+```
+
+### Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+## Configuration
+
+There are several ways to configure your Together API key for the enhancement feature:
+
+### 1. Interactive Configuration (Recommended)
+```bash
+# Set up your API key interactively (most secure)
+python -m hunter config --set-api-key
+
+# View your current configuration
+python -m hunter config --show
+```
+
+### 2. Environment Variable
+```bash
+# Set for current session
+export TOGETHER_API_KEY='your_api_key'
+
+# Or add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+echo 'export TOGETHER_API_KEY="your_api_key"' >> ~/.zshrc
+```
+
+### 3. Configuration File
+You can manually create or edit the configuration file:
+```bash
+# Location: ~/.config/hunter/config.ini
+[api]
+together_api_key = your_api_key
+
+[output]
+format = markdown
+style = dark
+```
+
+### Configuration Priority
+1. Environment variables (highest priority)
+2. User config file (`~/.config/hunter/config.ini`)
+3. Default values (lowest priority)
+
+A template configuration file with all available options is provided in `config.ini`.
+
+### Other Configuration Options
+- `HUNTER_OUTPUT_FORMAT`: Output format (default: markdown)
+- `HUNTER_CONSOLE_STYLE`: Console theme (dark/light)
+
+See `config.ini` for all configuration options and their documentation.
+
+## Performance
+
+Benchmarks for common operations:
+- Content extraction: ~1-2s
+- Markdown formatting: ~0.1s
+- AI enhancement: ~2-3s (when enabled)
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Credits
+
+Built with:
+- [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
+- [Rich](https://rich.readthedocs.io/)
+- [Requests](https://requests.readthedocs.io/)
+- [PyPerClip](https://pypi.org/project/pyperclip/) 

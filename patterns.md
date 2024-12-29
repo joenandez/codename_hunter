@@ -116,19 +116,31 @@ Features:
 - Non-blocking operation
 
 ## 7. AI Enhancement Pattern
-Implemented in `AIEnhancer`:
+Implemented in `utils.py` with configuration in `constants.py`:
 ```
 AIEnhancer
-├── API key management
+├── Together API integration
+│   ├── API key management
+│   ├── Model configuration
+│   └── Error handling
 ├── Token calculation
+│   ├── Usage tracking
+│   └── Cost estimation
 └── Content enhancement
+    ├── Markdown optimization
+    └── Formatting preservation
 ```
 
 Features:
-- Environment-based configuration
+- Centralized configuration through constants
+- Multiple API key configuration methods:
+  1. Interactive CLI setup
+  2. Environment variables
+  3. Config file (~/.config/hunter/config.ini)
+- Secure key storage with proper file permissions
 - Graceful fallback without API key
-- Token usage tracking
-- Error resilient enhancement
+- Clear user feedback on API status
+- Token usage optimization
 
 ## 8. Testing Strategy
 The codebase implements:
@@ -151,3 +163,128 @@ The refactored architecture achieves:
 8. AI-ready infrastructure
 
 This architecture allows for independent development and testing of components while maintaining the original functionality of the monolithic script.
+
+## 9. CLI Pattern
+Implemented in `main.py` and `__main__.py`, this pattern provides a clean command-line interface:
+
+```
+Hunter CLI
+├── __main__.py
+│   └── Module execution entry point
+├── parse_args()
+│   ├── URL subcommand
+│   │   ├── URL processing
+│   │   ├── Enhancement flags
+│   │   └── Clipboard flags
+│   └── Config subcommand
+│       ├── API key management
+│       └── Configuration display
+└── main()
+    ├── Argument validation
+    ├── Error handling
+    └── Output formatting
+```
+
+Features:
+- Dual execution modes:
+  1. Direct command: `hunter <command> [options]`
+  2. Module form: `python -m hunter <command> [options]`
+- Subcommand-based interface:
+  - `url`: Process web content
+  - `config`: Manage settings
+- Rich console output formatting
+- Clipboard integration
+- Proper exit codes
+- User-friendly error messages
+
+## 10. Main Application Pattern
+The application uses a modular main script pattern that coordinates all components:
+
+```
+hunter/
+├── __main__.py           # Module execution support
+├── main.py               # Main application logic
+│   ├── Configuration management
+│   │   ├── Config file handling
+│   │   ├── Environment variables
+│   │   └── Interactive setup
+│   ├── Command processing
+│   │   ├── URL subcommand
+│   │   └── Config subcommand
+│   └── Content pipeline
+│       ├── Content extraction
+│       ├── Formatting
+│       └── Enhancement
+└── utils.py, constants.py, etc.
+```
+
+Features:
+- Clean separation of commands via subcommands
+- Support for both direct and module execution
+- Modular component coordination
+- Consistent error handling
+- Clear configuration management
+- Rich user feedback
+
+## 11. Documentation Pattern
+The project follows a comprehensive documentation strategy:
+
+```
+Documentation
+├── README.md
+│   ├── Features overview
+│   ├── Installation guide
+│   ├── Usage examples
+│   └── Development guide
+├── Module Documentation
+│   ├── Module docstrings
+│   ├── Class documentation
+│   ├── Method signatures
+│   └── Usage examples
+└── Architecture Documentation
+    ├── Component patterns
+    ├── Data flows
+    └── Integration points
+```
+
+Features:
+- Consistent docstring format across modules
+- Type hints for all public interfaces
+- Rich examples in documentation
+- Clear separation of user and developer docs
+- Performance benchmarks
+- Configuration guides
+
+## 12. Configuration Pattern
+The system implements a hierarchical configuration system:
+
+```
+Configuration
+├── Command-line Interface
+│   ├── config --set-api-key
+│   └── config --show
+├── Environment Variables
+│   ├── TOGETHER_API_KEY
+│   └── HUNTER_* prefixed settings
+├── Config File (~/.config/hunter/config.ini)
+│   ├── [api] section
+│   └── [output] section
+└── Constants (constants.py)
+    ├── Default values
+    └── Configuration loading
+```
+
+Features:
+- Clear configuration priority:
+  1. Environment variables (highest)
+  2. User config file
+  3. Default values (lowest)
+- Secure configuration storage
+  - 0o600 permissions for config file
+  - 0o700 permissions for config directory
+- Template config.ini for documentation
+- Interactive configuration management
+- Rich console feedback
+- Type-safe configuration access
+
+This architecture provides a complete picture of how the system's components work together, from core functionality to documentation and configuration management.
