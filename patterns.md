@@ -92,17 +92,52 @@ URL/HTML → ContentExtractor → Parsers → Formatters → Enhanced Markdown
 
 ## 5. Error Handling Pattern
 Throughout the system:
+- Decorator-based error handling with `@error_handler`
+- Custom `HunterError` exception class
 - Graceful degradation when components fail
-- Clear error messages and logging
-- Fallback strategies for parsing/formatting
+- Comprehensive logging with rich formatting
+- Fallback strategies for AI enhancement
 - Type hints and validation
 
-## 6. Testing Strategy
+## 6. Progress Tracking Pattern
+The system implements a context-manager based progress tracking:
+```
+ProgressManager
+└── Rich-based progress indicators
+    ├── Spinner animations
+    ├── Text descriptions
+    └── Task management
+```
+
+Features:
+- Context manager for automatic cleanup
+- Rich console formatting
+- Task-based progress tracking
+- Non-blocking operation
+
+## 7. AI Enhancement Pattern
+Implemented in `AIEnhancer`:
+```
+AIEnhancer
+├── API key management
+├── Token calculation
+└── Content enhancement
+```
+
+Features:
+- Environment-based configuration
+- Graceful fallback without API key
+- Token usage tracking
+- Error resilient enhancement
+
+## 8. Testing Strategy
 The codebase implements:
 - Unit tests for each component
 - Integration tests for the pipeline
 - Test fixtures for common scenarios
 - Mocking for external dependencies
+- Async test support
+- Progress indicator testing
 
 ## Success Metrics
 The refactored architecture achieves:
@@ -112,5 +147,7 @@ The refactored architecture achieves:
 4. Better error handling
 5. Easier testing
 6. Clear component boundaries
+7. Progress visibility
+8. AI-ready infrastructure
 
 This architecture allows for independent development and testing of components while maintaining the original functionality of the monolithic script.
