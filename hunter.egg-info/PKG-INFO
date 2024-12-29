@@ -44,39 +44,33 @@ pip install git+https://github.com/yourusername/codename_hunter.git
 
 Basic usage:
 ```bash
-# Process a URL (with AI enhancement and clipboard copy by default)
+# Process a URL (simplest form)
+hunter https://example.com
+
+# Alternative forms also supported:
 hunter url https://example.com
+hunter uri https://example.com
 
-# Or using Python module form (when installed locally)
+# Or using Python module form
+python -m hunter https://example.com
 python -m hunter url https://example.com
-
-# Configure API key (required for AI enhancement)
-hunter config --set-api-key
-
-# Show current configuration
-hunter config --show
 ```
 
-Options for URL processing:
+Options:
 - `--no-enhance`: Disable AI enhancement
 - `--no-copy`: Disable clipboard copy
 
 Examples:
 ```bash
 # Extract and format content (with defaults)
-hunter url https://example.com/article
+hunter https://example.com/article
 
 # Process without AI enhancement
-hunter url https://example.com/article --no-enhance
+hunter https://example.com/article --no-enhance
 
 # Process without copying to clipboard
-hunter url https://example.com/article --no-copy
+hunter https://example.com/article --no-copy
 
-# Process without both enhancement and clipboard
-hunter url https://example.com/article --no-enhance --no-copy
-
-# Set up API key interactively
-hunter config --set-api-key
 ```
 
 ## Development
@@ -136,18 +130,9 @@ pytest --cov=src tests/
 
 ## Configuration
 
-There are several ways to configure your Together API key for the enhancement feature:
+There are two ways to configure your Together API key for the enhancement feature:
 
-### 1. Interactive Configuration (Recommended)
-```bash
-# Set up your API key interactively (most secure)
-python -m hunter config --set-api-key
-
-# View your current configuration
-python -m hunter config --show
-```
-
-### 2. Environment Variable
+### 1. Environment Variable (Recommended)
 ```bash
 # Set for current session
 export TOGETHER_API_KEY='your_api_key'
@@ -156,22 +141,17 @@ export TOGETHER_API_KEY='your_api_key'
 echo 'export TOGETHER_API_KEY="your_api_key"' >> ~/.zshrc
 ```
 
-### 3. Configuration File
+### 2. Configuration File
 You can manually create or edit the configuration file:
 ```bash
 # Location: ~/.config/hunter/config.ini
 [api]
 together_api_key = your_api_key
-
-[output]
-format = markdown
-style = dark
 ```
 
 ### Configuration Priority
 1. Environment variables (highest priority)
 2. User config file (`~/.config/hunter/config.ini`)
-3. Default values (lowest priority)
 
 A template configuration file with all available options is provided in `config.ini`.
 

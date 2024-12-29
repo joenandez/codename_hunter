@@ -56,11 +56,6 @@ hunter https://example.com/article --no-enhance
 # Process without copying to clipboard
 hunter https://example.com/article --no-copy
 
-# Configure API key (required for AI enhancement)
-hunter config --set-api-key
-
-# Show current configuration
-hunter config --show
 ```
 
 ## Development
@@ -120,18 +115,9 @@ pytest --cov=src tests/
 
 ## Configuration
 
-There are several ways to configure your Together API key for the enhancement feature:
+There are three ways to configure your Together API key and other settings:
 
-### 1. Interactive Configuration (Recommended)
-```bash
-# Set up your API key interactively (most secure)
-python -m hunter config --set-api-key
-
-# View your current configuration
-python -m hunter config --show
-```
-
-### 2. Environment Variable
+### 1. Environment Variable (Highest Priority)
 ```bash
 # Set for current session
 export TOGETHER_API_KEY='your_api_key'
@@ -140,10 +126,41 @@ export TOGETHER_API_KEY='your_api_key'
 echo 'export TOGETHER_API_KEY="your_api_key"' >> ~/.zshrc
 ```
 
-### 3. Configuration File
-You can manually create or edit the configuration file:
+### 2. Configuration Files
+The system checks configuration files in the following order:
+
+1. User config: `~/.config/hunter/config.ini`
+2. Local config: `./config/config.ini`
+3. Default config: `./config/config.ini.template`
+
+To set up your configuration:
 ```bash
-# Location: ~/.config/hunter/config.ini
+# Option 1: User-specific configuration (recommended)
+mkdir -p ~/.config/hunter
+cp config/config.ini.template ~/.config/hunter/config.ini
+nano ~/.config/hunter/config.ini
+
+# Option 2: Local project configuration
+cp config/config.ini.template config/config.ini
+nano config/config.ini
+```
+
+### Configuration Priority
+1. Environment variables (highest priority)
+2. User config file (`~/.config/hunter/config.ini`)
+3. Local config file (`./config/config.ini`)
+4. Default config file (`./config/config.ini.template`)
+
+### Other Configuration Options
+All configuration options can be set via environment variables or config files:
+
+Environment Variables:
+- `TOGETHER_API_KEY`: Your Together.ai API key
+- `HUNTER_OUTPUT_FORMAT`: Output format (default: markdown)
+- `HUNTER_CONSOLE_STYLE`: Console theme (dark/light)
+
+Config File Sections:
+```ini
 [api]
 together_api_key = your_api_key
 
@@ -152,18 +169,7 @@ format = markdown
 style = dark
 ```
 
-### Configuration Priority
-1. Environment variables (highest priority)
-2. User config file (`~/.config/hunter/config.ini`)
-3. Default values (lowest priority)
-
-A template configuration file with all available options is provided in `config.ini`.
-
-### Other Configuration Options
-- `HUNTER_OUTPUT_FORMAT`: Output format (default: markdown)
-- `HUNTER_CONSOLE_STYLE`: Console theme (dark/light)
-
-See `config.ini` for all configuration options and their documentation.
+See `config/config.ini.template` for all configuration options and their documentation.
 
 ## Performance
 

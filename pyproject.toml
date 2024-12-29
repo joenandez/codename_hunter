@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hunter"
+version = "0.1.0"
+description = "A powerful tool for extracting and enhancing markdown content from web pages"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    {name = "Joe"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "beautifulsoup4",
+    "rich",
+    "requests",
+    "pyperclip",
+]
+
+[project.scripts]
+hunter = "hunter.main:main"
+
+[tool.setuptools]
+packages = ["hunter"] 

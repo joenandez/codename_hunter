@@ -260,31 +260,39 @@ The system implements a hierarchical configuration system:
 
 ```
 Configuration
-├── Command-line Interface
-│   ├── config --set-api-key
-│   └── config --show
-├── Environment Variables
+├── Environment Variables (highest)
 │   ├── TOGETHER_API_KEY
 │   └── HUNTER_* prefixed settings
-├── Config File (~/.config/hunter/config.ini)
-│   ├── [api] section
-│   └── [output] section
+├── Config Files (in priority order)
+│   ├── User config (~/.config/hunter/config.ini)
+│   ├── Local config (./config/config.ini)
+│   └── Default config (./config/config.ini.template)
 └── Constants (constants.py)
-    ├── Default values
-    └── Configuration loading
+    ├── Configuration loading logic
+    └── Default values
 ```
 
 Features:
 - Clear configuration priority:
   1. Environment variables (highest)
-  2. User config file
-  3. Default values (lowest)
+  2. User config file (~/.config/hunter/config.ini)
+  3. Local config file (./config/config.ini)
+  4. Default config file (./config/config.ini.template)
+  5. Default values (lowest)
 - Secure configuration storage
-  - 0o600 permissions for config file
-  - 0o700 permissions for config directory
-- Template config.ini for documentation
-- Interactive configuration management
-- Rich console feedback
+  - 0o600 permissions for config files
+  - 0o700 permissions for config directories
+- Template-based configuration
+  - Default template in version control
+  - Clear documentation of options
+  - Easy setup process
+- Flexible override system
+  - Environment variables for CI/CD
+  - User config for personal settings
+  - Local config for project-specific needs
 - Type-safe configuration access
+  - Strong typing in constants.py
+  - Validation on load
+  - Comprehensive logging
 
 This architecture provides a complete picture of how the system's components work together, from core functionality to documentation and configuration management.

@@ -10,15 +10,10 @@ Example:
 
     With enhancement and clipboard:
         $ hunter url https://example.com --no-enhance --no-copy
-        
-    Configure API key:
-        $ hunter config --set-api-key
-        $ hunter config --show
 """
 
 from pathlib import Path
 import configparser
-from getpass import getpass
 from typing import Optional
 from rich.console import Console
 from rich.markdown import Markdown
@@ -53,75 +48,15 @@ except ImportError:
     )
     from .utils import extract_content, enhance_markdown_formatting
 
-CONFIG_DIR = Path.home() / '.config' / 'hunter'
-CONFIG_FILE = CONFIG_DIR / 'config.ini'
-
-def ensure_config_dir() -> None:
-    """Ensure configuration directory exists."""
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    # Secure the directory permissions
-    CONFIG_DIR.chmod(0o700)
-
-def load_config() -> configparser.ConfigParser:
-    """Load configuration from file."""
-    config = configparser.ConfigParser()
-    if CONFIG_FILE.exists():
-        config.read(CONFIG_FILE)
-    return config
-
-def save_config(config: configparser.ConfigParser) -> None:
-    """Save configuration to file."""
-    ensure_config_dir()
-    with CONFIG_FILE.open('w') as f:
-        config.write(f)
-    # Secure the file permissions
-    CONFIG_FILE.chmod(0o600)
-
-def get_api_key() -> Optional[str]:
-    """Get API key from environment or config file."""
-    # Environment variable takes precedence
-    if key := os.getenv('TOGETHER_API_KEY'):
-        return key
-    
-    # Try config file
-    config = load_config()
-    return config.get('api', 'together_api_key', fallback=None)
-
-def set_api_key(key: Optional[str] = None) -> None:
-    """Set API key in configuration file."""
-    if not key:
-        key = getpass("Enter your Together API key: ")
-    
-    config = load_config()
-    if 'api' not in config:
-        config['api'] = {}
-    config['api']['together_api_key'] = key
-    save_config(config)
-    print("[green]✓[/green] API key saved successfully!")
-
-def show_config(console: Console) -> None:
-    """Display current configuration."""
-    config = load_config()
-    console.print("\n[bold blue]Configuration:[/bold blue]")
-    
-    # Show API key status
-    key = get_api_key()
-    if key:
-        masked_key = f"{key[:4]}...{key[-4:]}"
-        console.print(f"[green]✓ API key configured: {masked_key}[/green]")
-    else:
-        console.print("[yellow]⚠️  No API key configured[/yellow]")
-        console.print("[yellow]Tip: Set it using 'hunter config --set-api-key'[/yellow]")
-
 def check_api_status(console: Console) -> None:
     """Check and display Together API status."""
     console.print("\n[bold blue]API Status:[/bold blue]")
-    if key := get_api_key():
-        masked_key = f"{key[:4]}...{key[-4:]}"
+    if TOGETHER_API_KEY:
+        masked_key = f"{TOGETHER_API_KEY[:4]}...{TOGETHER_API_KEY[-4:]}"
         console.print(f"[green]✓ Found API key: {masked_key}[/green]")
     else:
         console.print("[yellow]⚠️  No API key found[/yellow]")
-        console.print("[yellow]Tip: Set it using 'hunter config --set-api-key'[/yellow]")
+        console.print("[yellow]Tip: Set TOGETHER_API_KEY environment variable or configure in ~/.config/hunter/config.ini[/yellow]")
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
@@ -155,13 +90,6 @@ def parse_args() -> argparse.Namespace:
         url_parser.add_argument("--no-copy", action="store_true",
                                help="Disable clipboard copy")
     
-    # Config mode
-    config_parser = subparsers.add_parser('config', help='Configure settings')
-    config_parser.add_argument("--set-api-key", action="store_true",
-                              help="Set Together API key")
-    config_parser.add_argument("--show", action="store_true",
-                              help="Show current configuration")
-    
     return parser.parse_args()
 
 def main() -> None:
@@ -175,14 +103,6 @@ def main() -> None:
     })
     console = Console(theme=theme)
     
-    if args.command == 'config':
-        if args.set_api_key:
-            set_api_key()
-        if args.show:
-            show_config(console)
-        return
-    
-    # URL processing (default command)
     try:
         # Extract content
         content = extract_content(args.url)
@@ -190,15 +110,15 @@ def main() -> None:
         # Check API status and enhance by default unless disabled
         if not args.no_enhance:
             check_api_status(console)
-            if key := get_api_key():
-                content = enhance_markdown_formatting(content, key)
+            if TOGETHER_API_KEY:
+                content = enhance_markdown_formatting(content, TOGETHER_API_KEY)
             else:
                 console.print("[yellow]⚠️  AI enhancement skipped - no API key configured[/yellow]")
         
         # Display the result
         console.print(Markdown(content))
         
-        # Copy to clipboard by default unless disabled (moved to end)
+        # Copy to clipboard by default unless disabled
         if not args.no_copy:
             pyperclip.copy(content)
             console.print("\n[green]✓[/green] Content has been copied to clipboard!")

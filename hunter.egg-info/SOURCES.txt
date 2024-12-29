@@ -1,5 +1,5 @@
 README.md
-setup.py
+pyproject.toml
 hunter/__init__.py
 hunter/__main__.py
 hunter/constants.py
