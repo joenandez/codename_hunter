@@ -1,4 +1,9 @@
-"""Common test fixtures."""
+"""Common test fixtures.
+
+This module provides common fixtures used across test modules.
+It includes fixtures for mocking the Together API key and creating
+test instances of various classes.
+"""
 import pytest
 from hunter.parsers import ContentExtractor
 from hunter.utils.ai import AIEnhancer
