@@ -1,3 +1,14 @@
+
+██╗  ██╗██╗   ██╗███╗   ██╗████████╗███████╗██████╗ 
+██║  ██║██║   ██║████╗  ██║╚══██╔══╝██╔════╝██╔══██╗
+███████║██║   ██║██╔██╗ ██║   ██║   █████╗  ██████╔╝
+██╔══██║██║   ██║██║╚██╗██║   ██║   ██╔══╝  ██╔══██╗
+██║  ██║╚██████╔╝██║ ╚████║   ██║   ███████╗██║  ██║
+╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+                                                    
+
+
+
 # Codename Hunter
 
 A powerful tool for extracting and enhancing markdown content from web pages.
@@ -65,32 +76,32 @@ hunter https://example.com/article --no-copy
 ```
 hunter/
 ├── __init__.py
-├── __main__.py     # Module execution entry point
-├── main.py         # Main entry point and CLI
-├── constants.py    # Configuration and constants
-├── formatters.py   # Content formatting
-├── parsers.py      # Content extraction
-└── utils.py        # Utilities and helpers
-
-tests/
-└── test_*.py       # Test files
+├── __main__.py        # Module execution entry point
+├── main.py           # Main application logic
+├── constants.py      # Configuration and constants
+├── formatters.py     # Content formatting
+├── parsers.py        # Content parsing
+└── utils/
+    ├── __init__.py
+    ├── ai.py         # AI enhancement
+    ├── errors.py     # Error handling
+    ├── fetcher.py    # Async content fetching
+    └── progress.py   # Progress tracking
 ```
 
 ### Architecture
 
 The project follows these key architectural patterns:
-1. Constants Separation
-2. Formatter Chain
-3. Parser Hierarchy
-4. Content Flow Pipeline
-5. Error Handling
-6. Progress Tracking
-7. AI Enhancement
-8. Testing Strategy
-9. CLI Interface
-10. Main Application Facade
+1. Constants Separation - Centralized configuration
+2. Security - Secure handling of sensitive data
+3. Formatter Chain - Modular content formatting
+4. Parser Hierarchy - Flexible content parsing
+5. Content Flow Pipeline - Streamlined processing
+6. Error Handling - Robust error management
+7. Progress Tracking - Real-time user feedback
+8. AI Enhancement - Optional content improvement
 
-See `patterns.md` for detailed architecture documentation.
+See `project_docs/patterns.md` for detailed architecture documentation.
 
 ### Running Tests
 
@@ -115,44 +126,21 @@ pytest --cov=src tests/
 
 ## Configuration
 
-There are two ways to configure your Together API key:
+Configuration is handled through environment variables and an optional `.env` file:
 
-### 1. Environment Variable (Recommended)
+### Together API Configuration
+
 ```bash
-# Set for current session
+# Method 1: Environment Variable (recommended)
 export TOGETHER_API_KEY='your_api_key'
 
-# Or add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
-echo 'export TOGETHER_API_KEY="your_api_key"' >> ~/.zshrc
+# Method 2: Environment File
+# Create .env in project root:
+TOGETHER_API_KEY=your_api_key
 ```
-
-### 2. Environment File
-Create a `.env` file in the project root:
-```bash
-# Create .env file
-cp .env.template .env
-# Edit with your API key
-nano .env
-```
-
-The `.env` file should contain:
-```
-TOGETHER_API_KEY=your_api_key_here
-```
-
-### Configuration Priority
-1. Environment variables (highest priority)
-2. `.env` file
-3. Default values in `constants.py`
 
 ### Other Settings
-The following settings have sensible defaults in `constants.py`:
-- Output format (default: markdown)
-- Console theme (default: dark)
 
-These can be overridden using environment variables if needed:
-- `HUNTER_OUTPUT_FORMAT`: Output format
-- `HUNTER_CONSOLE_STYLE`: Console theme (dark/light)
 
 ## Performance
 
