@@ -37,8 +37,10 @@ async def test_enhance_content_async_success():
     with patch('aiohttp.ClientSession.post') as mock_post:
         mock_response = MagicMock()
         mock_response.status = 200
-        mock_response.json = PropertyMock(return_value=asyncio.Future())
-        mock_response.json.return_value.set_result({
+        
+        # Create a future for the response
+        future = asyncio.Future()
+        future.set_result({
             "choices": [{
                 "message": {"content": "Enhanced content"}
             }],
@@ -48,6 +50,7 @@ async def test_enhance_content_async_success():
                 "completion_tokens": 50
             }
         })
+        mock_response.json.return_value = future
         mock_post.return_value.__aenter__.return_value = mock_response
 
         content = "Original content"
