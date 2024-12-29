@@ -3,6 +3,12 @@ import pytest
 from hunter.parsers import ContentExtractor
 from hunter.utils.ai import AIEnhancer
 from hunter.formatters import BaseFormatter, CodeFormatter, LinkFormatter
+import os
+
+@pytest.fixture(autouse=True)
+def mock_together_api_key(monkeypatch):
+    """Mock Together API key for tests."""
+    monkeypatch.setenv('TOGETHER_API_KEY', 'test_key')
 
 @pytest.fixture
 def extractor():
