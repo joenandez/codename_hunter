@@ -61,21 +61,22 @@ class AIEnhancer:
         Returns:
             str: Enhanced content or original if enhancement fails
         """
-        # Set the default return value to the original content
-        self.default_return_value = content
-        
-        if not self.api_key:
-            logger.warning("No API key available for AI enhancement")
-            return content
+        try:
+            # Set the default return value to the original content
+            self.default_return_value = content
             
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        messages = [{
-            "role": "system",
-            "content": """You are a markdown formatting expert. Improve the formatting while preserving all information and links. Focus on:
+            if not self.api_key:
+                logger.warning("No API key available for AI enhancement")
+                return content
+                
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            messages = [{
+                "role": "system",
+                "content": """You are a markdown formatting expert. Improve the formatting while preserving all information and links. Focus on:
 1. Consistent spacing between sections
 2. Beautiful list formatting
 3. Proper code block presentation
@@ -83,62 +84,65 @@ class AIEnhancer:
 5. Clean link and inline code formatting
 
 Return ONLY the raw markdown content."""
-        }, {
-            "role": "user",
-            "content": f"Here is the markdown content to improve:\n\n{content}"
-        }]
+            }, {
+                "role": "user",
+                "content": f"Here is the markdown content to improve:\n\n{content}"
+            }]
 
-        async with ProgressManager() as progress_mgr:
-            task_id = progress_mgr.add_task("Enhancing content with Together AI...")
-            spinner_task = None
-            
-            try:
-                # Create a background task to update the spinner
-                async def update_spinner():
-                    while True:
-                        progress_mgr.advance(task_id)
-                        await asyncio.sleep(0.1)  # Update every 100ms
+            async with ProgressManager() as progress_mgr:
+                task_id = progress_mgr.add_task("Enhancing content with Together AI...")
+                spinner_task = None
                 
-                spinner_task = asyncio.create_task(update_spinner())
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(
-                        "https://api.together.xyz/v1/chat/completions",
-                        headers=headers,
-                        json={
-                            "model": TOGETHER_MODEL,
-                            "messages": messages,
-                            "max_tokens": TOGETHER_MAX_TOKENS,
-                            "temperature": TOGETHER_TEMPERATURE
-                        },
-                        timeout=30
-                    ) as response:
-                        if response.status == 200:
-                            result = await response.json()
-                            if "choices" in result and result["choices"]:
-                                # Log token usage and cost information
-                                if "usage" in result:
-                                    usage = result["usage"]
-                                    total_tokens = usage.get("total_tokens", 0)
-                                    cost = (total_tokens / 1_000_000) * TOGETHER_PRICE_PER_MILLION_TOKENS
-                                    logger.info(
-                                        f"Token usage - Prompt: {usage.get('prompt_tokens', 0)}, "
-                                        f"Completion: {usage.get('completion_tokens', 0)}, "
-                                        f"Total: {total_tokens} "
-                                        f"(Cost: ${cost:.4f})"
-                                    )
-                                return result["choices"][0]["message"]["content"].strip()
-                        
-                        logger.error(f"AI enhancement failed: {response.status}")
-                        return content
-            finally:
-                if spinner_task:
-                    spinner_task.cancel()
-                    try:
-                        await spinner_task
-                    except asyncio.CancelledError:
-                        pass
-                progress_mgr.remove_task(task_id)
+                try:
+                    # Create a background task to update the spinner
+                    async def update_spinner():
+                        while True:
+                            progress_mgr.advance(task_id)
+                            await asyncio.sleep(0.1)  # Update every 100ms
+                    
+                    spinner_task = asyncio.create_task(update_spinner())
+                    
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post(
+                            "https://api.together.xyz/v1/chat/completions",
+                            headers=headers,
+                            json={
+                                "model": TOGETHER_MODEL,
+                                "messages": messages,
+                                "max_tokens": TOGETHER_MAX_TOKENS,
+                                "temperature": TOGETHER_TEMPERATURE
+                            },
+                            timeout=30
+                        ) as response:
+                            if response.status == 200:
+                                result = await response.json()
+                                if "choices" in result and result["choices"]:
+                                    # Log token usage and cost information
+                                    if "usage" in result:
+                                        usage = result["usage"]
+                                        total_tokens = usage.get("total_tokens", 0)
+                                        cost = (total_tokens / 1_000_000) * TOGETHER_PRICE_PER_MILLION_TOKENS
+                                        logger.info(
+                                            f"Token usage - Prompt: {usage.get('prompt_tokens', 0)}, "
+                                            f"Completion: {usage.get('completion_tokens', 0)}, "
+                                            f"Total: {total_tokens} "
+                                            f"(Cost: ${cost:.4f})"
+                                        )
+                                    return result["choices"][0]["message"]["content"].strip()
+                            
+                            logger.error(f"AI enhancement failed: {response.status}")
+                            return content
+                finally:
+                    if spinner_task:
+                        spinner_task.cancel()
+                        try:
+                            await spinner_task
+                        except asyncio.CancelledError:
+                            pass
+                    progress_mgr.remove_task(task_id)
+        except Exception as e:
+            logger.error(f"Error in enhance_content_async: {str(e)}")
+            return content  # Return original content on any error
     
     def get_token_usage(self, response_json: Dict[str, Any]) -> TokenInfo:
         """Extract token usage information from API response.

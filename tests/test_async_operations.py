@@ -2,9 +2,11 @@
 import pytest
 import asyncio
 from unittest.mock import patch, MagicMock, PropertyMock, AsyncMock
+from aiohttp import ClientSession, ClientResponse, web
 from hunter.utils.fetcher import fetch_url_async
 from hunter.utils.ai import AIEnhancer
 from hunter.utils.errors import HunterError
+from hunter.utils.progress import ProgressManager
 
 @pytest.mark.asyncio
 async def test_fetch_url_async_success():
@@ -33,20 +35,9 @@ async def test_fetch_url_async_failure():
 @pytest.mark.asyncio
 async def test_enhance_content_async_success():
     """Test successful content enhancement."""
-    enhancer = AIEnhancer()
+    enhancer = AIEnhancer(api_key="test_key")
     
-    # Mock the session context manager
-    session_mock = MagicMock()
-    session_mock.__aenter__.return_value = session_mock
-    session_mock.__aexit__.return_value = None
-    
-    # Mock the response context manager
-    response_mock = MagicMock()
-    response_mock.__aenter__.return_value = response_mock
-    response_mock.__aexit__.return_value = None
-    response_mock.status = 200
-    
-    # Mock the json response
+    # Create response data
     response_data = {
         "choices": [{
             "message": {"content": "Enhanced content"}
@@ -57,37 +48,56 @@ async def test_enhance_content_async_success():
             "completion_tokens": 50
         }
     }
-    response_mock.json = AsyncMock(return_value=response_data)
     
-    # Set up the session to return our response
-    session_mock.post.return_value = response_mock
+    # Mock the progress manager
+    mock_progress = AsyncMock()
+    mock_progress.add_task = MagicMock(return_value=1)
+    mock_progress.advance = MagicMock()
+    mock_progress.remove_task = MagicMock()
+    mock_progress.__aenter__.return_value = mock_progress
     
-    with patch('aiohttp.ClientSession', return_value=session_mock):
-        content = "Original content"
-        enhanced = await enhancer.enhance_content_async(content)
-        assert enhanced == "Enhanced content"
+    # Mock the response using the same pattern as test_fetch_url_async_success
+    with patch('aiohttp.ClientSession.post') as mock_post:
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.json = PropertyMock(return_value=asyncio.Future())
+        mock_response.json.return_value.set_result(response_data)
+        mock_post.return_value.__aenter__.return_value = mock_response
+        
+        with patch('hunter.utils.ai.ProgressManager', return_value=mock_progress), \
+             patch('hunter.utils.ai.TOGETHER_MODEL', 'test-model'), \
+             patch('hunter.utils.ai.TOGETHER_MAX_TOKENS', 1000), \
+             patch('hunter.utils.ai.TOGETHER_TEMPERATURE', 0.5):
+            content = "Original content"
+            enhanced = await enhancer.enhance_content_async(content)
+            assert enhanced == "Enhanced content"
 
 @pytest.mark.asyncio
 async def test_enhance_content_async_failure():
     """Test content enhancement failure."""
-    enhancer = AIEnhancer()
+    enhancer = AIEnhancer(api_key="test_key")
     
-    # Mock the session context manager
-    session_mock = MagicMock()
-    session_mock.__aenter__.return_value = session_mock
-    session_mock.__aexit__.return_value = None
+    # Mock the progress manager
+    mock_progress = AsyncMock()
+    mock_progress.add_task = MagicMock(return_value=1)
+    mock_progress.advance = MagicMock()
+    mock_progress.remove_task = MagicMock()
+    mock_progress.__aenter__.return_value = mock_progress
     
-    # Mock the response context manager
-    response_mock = MagicMock()
-    response_mock.__aenter__.return_value = response_mock
-    response_mock.__aexit__.return_value = None
-    response_mock.status = 500
-    response_mock.json = AsyncMock(return_value={"error": "Internal server error"})
+    # Mock the response
+    mock_response = AsyncMock()
+    mock_response.status = 500
+    mock_response.json.return_value = {"error": "Internal server error"}
     
-    # Set up the session to return our response
-    session_mock.post.return_value = response_mock
+    # Mock the session
+    mock_session = AsyncMock()
+    mock_session.post.return_value.__aenter__.return_value = mock_response
     
-    with patch('aiohttp.ClientSession', return_value=session_mock):
+    with patch('aiohttp.ClientSession', return_value=mock_session), \
+         patch('hunter.utils.ai.ProgressManager', return_value=mock_progress), \
+         patch('hunter.utils.ai.TOGETHER_MODEL', 'test-model'), \
+         patch('hunter.utils.ai.TOGETHER_MAX_TOKENS', 1000), \
+         patch('hunter.utils.ai.TOGETHER_TEMPERATURE', 0.5):
         content = "Original content"
         result = await enhancer.enhance_content_async(content)
-        assert result == content  # Should return original content on failure 
+        assert result == content  # Should return original content on failure

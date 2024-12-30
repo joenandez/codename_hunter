@@ -29,7 +29,7 @@ Requires-Dist: beautifulsoup4>=4.12.0
 Requires-Dist: rich>=13.7.0
 Requires-Dist: requests>=2.31.0
 Requires-Dist: pyperclip>=1.8.2
-Requires-Dist: aiohttp>=3.11.0
+Requires-Dist: aiohttp>=3.8.0
 Requires-Dist: python-dotenv>=0.21.0
 Requires-Dist: pydantic>=1.10.0
 Provides-Extra: dev
