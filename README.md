@@ -1,8 +1,10 @@
 # Hunter
 
-![Build Status](https://img.shields.io/github/workflow/status/joesuspense/hunter/CI?style=for-the-badge)
-![License](https://img.shields.io/github/license/joesuspense/hunter?style=for-the-badge)
-![PyPI](https://img.shields.io/pypi/v/hunter?style=for-the-badge)
+![Build Status](https://img.shields.io/github/actions/workflow/status/joenandez/codename_hunter/python-package.yml?style=for-the-badge)
+![License](https://img.shields.io/github/license/joenandez/codename_hunter?style=for-the-badge)
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue?style=for-the-badge)
+![Code Style](https://img.shields.io/badge/code%20style-flake8-black?style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/joenandez/codename_hunter?style=for-the-badge)
 
 
 ██╗  ██╗██╗   ██╗███╗   ██╗████████╗███████╗██████╗ 
@@ -49,8 +51,8 @@ pip install hunter
 ### Install from Source
 
 ```bash
-git clone https://github.com/joenandez/hunter.git
-cd hunter
+git clone https://github.com/joenandez/codename_hunter.git
+cd codename_hunter
 pip install -e .
 ```
 

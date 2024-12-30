@@ -40,9 +40,9 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/joenandez/hunter"
-"Bug Tracker" = "https://github.com/joenandez/hunter/issues"
-"Documentation" = "https://github.com/joenandez/hunter#readme"
+"Homepage" = "https://github.com/joenandez/codename_hunter"
+"Bug Tracker" = "https://github.com/joenandez/codename_hunter/issues"
+"Documentation" = "https://github.com/joenandez/codename_hunter#readme"
 
 [project.optional-dependencies]
 dev = [
