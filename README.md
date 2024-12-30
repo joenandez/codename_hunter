@@ -167,12 +167,6 @@ Run the test suite:
 pytest
 ```
 
-Run with coverage:
-
-```bash
-pytest --cov=hunter
-```
-
 ## Contributing
 
 1. Fork the repository

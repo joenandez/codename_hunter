@@ -47,7 +47,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.23.0",
     "flake8>=6.1.0"
 ]
@@ -62,4 +61,4 @@ packages = ["hunter"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --cov=hunter --cov-report=xml" 
+addopts = "-v" 

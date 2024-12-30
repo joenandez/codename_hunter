@@ -84,20 +84,18 @@ async def test_enhance_content_async_failure():
     mock_progress.remove_task = MagicMock()
     mock_progress.__aenter__.return_value = mock_progress
     
-    # Mock the response
-    mock_response = AsyncMock()
-    mock_response.status = 500
-    mock_response.json.return_value = {"error": "Internal server error"}
-    
-    # Mock the session
-    mock_session = AsyncMock()
-    mock_session.post.return_value.__aenter__.return_value = mock_response
-    
-    with patch('aiohttp.ClientSession', return_value=mock_session), \
-         patch('hunter.utils.ai.ProgressManager', return_value=mock_progress), \
-         patch('hunter.utils.ai.TOGETHER_MODEL', 'test-model'), \
-         patch('hunter.utils.ai.TOGETHER_MAX_TOKENS', 1000), \
-         patch('hunter.utils.ai.TOGETHER_TEMPERATURE', 0.5):
-        content = "Original content"
-        result = await enhancer.enhance_content_async(content)
-        assert result == content  # Should return original content on failure
+    # Mock the response using the same pattern as test_fetch_url_async_success
+    with patch('aiohttp.ClientSession.post') as mock_post:
+        mock_response = MagicMock()
+        mock_response.status = 500
+        mock_response.json = PropertyMock(return_value=asyncio.Future())
+        mock_response.json.return_value.set_result({"error": "Internal server error"})
+        mock_post.return_value.__aenter__.return_value = mock_response
+        
+        with patch('hunter.utils.ai.ProgressManager', return_value=mock_progress), \
+             patch('hunter.utils.ai.TOGETHER_MODEL', 'test-model'), \
+             patch('hunter.utils.ai.TOGETHER_MAX_TOKENS', 1000), \
+             patch('hunter.utils.ai.TOGETHER_TEMPERATURE', 0.5):
+            content = "Original content"
+            result = await enhancer.enhance_content_async(content)
+            assert result == content  # Should return original content on failure
