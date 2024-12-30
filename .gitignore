@@ -1,10 +1,11 @@
+.preludeignore
 .DS_Store
 project_docs/
 # Configuration files
 config/config.ini
 ~/.config/hunter/config.ini
 .env
-__pycache__/
+__pycache__
 .pytest_cache/
 hunter/__pycache__/
 hunter.egg-info/
