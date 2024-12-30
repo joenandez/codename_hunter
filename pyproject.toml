@@ -9,22 +9,56 @@ description = "A powerful tool for extracting and enhancing markdown content fro
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
-    {name = "Joe"}
+    {name = "Joe", email = "joevfernandez@gmail.com"}
 ]
+license = {text = "MIT"}
+keywords = ["markdown", "web-scraping", "content-extraction", "ai-enhancement"]
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
-    "beautifulsoup4",
-    "rich",
-    "requests",
-    "pyperclip",
+    "beautifulsoup4>=4.12.0",
+    "rich>=13.7.0",
+    "requests>=2.31.0",
+    "pyperclip>=1.8.2",
+    "aiohttp>=3.8.0",
+    "python-dotenv>=0.21.0",
+    "pydantic>=1.10.0"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/joenandez/hunter"
+"Bug Tracker" = "https://github.com/joenandez/hunter/issues"
+"Documentation" = "https://github.com/joenandez/hunter#readme"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "flake8>=6.1.0"
 ]
 
 [project.scripts]
 hunter = "hunter.main:main"
 
 [tool.setuptools]
-packages = ["hunter"] 
+packages = ["hunter"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v" 

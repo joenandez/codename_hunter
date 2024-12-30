@@ -17,19 +17,22 @@ The parsing system handles:
 
 Example:
     >>> extractor = ContentExtractor()
-    >>> results = extractor.extract_from_url("https://example.com")
+    >>> results = await extractor.extract_from_url("https://example.com")
     >>> for result in results:
     ...     print(f"{result.content_type}: {result.content}")
 """
 
 from typing import Optional, List, Dict, Protocol, Any, Iterator
 from bs4 import BeautifulSoup, Tag, NavigableString
-import requests
+import aiohttp
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from . import constants
-from .formatters import BaseFormatter, CodeFormatter, LinkFormatter
 from enum import Enum, auto
+
+from hunter import constants
+from hunter.formatters import BaseFormatter, CodeFormatter, LinkFormatter
+from hunter.utils.fetcher import fetch_url_async
+from hunter.utils.errors import HunterError, async_error_handler
 
 class ContentType(Enum):
     """Types of content that can be parsed.
@@ -315,18 +318,19 @@ class ListParser(ContentParser):
             parent = parent.parent
         return depth
     
-    def format_list_item(self, element: Tag, depth: int = 0) -> str:
+    def format_list_item(self, element: Tag, depth: int = 0, index: int = 1) -> str:
         """Format a single list item with proper indentation.
         
         Args:
             element: List item element to format
             depth: Current nesting depth
+            index: Current item index (for ordered lists)
             
         Returns:
             str: Formatted list item
         """
         indent = '    ' * depth
-        marker = '1. ' if element.parent.name == 'ol' else '- '
+        marker = f"{index}. " if element.parent.name == 'ol' else '- '
         
         # Get the direct text content
         content = self.formatter.clean_content(element.get_text(strip=True))
@@ -364,8 +368,8 @@ class ListParser(ContentParser):
         depth = self.get_list_depth(element)
         items = []
         
-        for item in element.find_all('li', recursive=False):
-            items.append(self.format_list_item(item, depth))
+        for i, item in enumerate(element.find_all('li', recursive=False), start=1):
+            items.append(self.format_list_item(item, depth, i))
         
         content = '\n'.join(items)
         return ParseResult(
@@ -461,19 +465,15 @@ class ContentExtractor:
     
     Attributes:
         parser_factory (ParserFactory): Factory for creating parsers
-        session (requests.Session): Session for making HTTP requests
     """
     
     def __init__(self):
-        """Initialize with parser factory and configured session."""
+        """Initialize with parser factory."""
         self.parser_factory = ParserFactory()
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        })
     
-    def _fetch_url(self, url: str) -> str:
-        """Fetch HTML content from a URL.
+    @async_error_handler
+    async def _fetch_url(self, url: str) -> str:
+        """Fetch HTML content from a URL asynchronously.
         
         Args:
             url: URL to fetch content from
@@ -482,14 +482,9 @@ class ContentExtractor:
             str: Raw HTML content
             
         Raises:
-            ValueError: If URL fetch fails
+            HunterError: If URL fetch fails
         """
-        try:
-            response = self.session.get(url, timeout=10)
-            response.raise_for_status()
-            return response.text
-        except requests.RequestException as e:
-            raise ValueError(f"Failed to fetch URL {url}: {str(e)}")
+        return await fetch_url_async(url)
     
     def _parse_element(self, element: Tag) -> Optional[ParseResult]:
         """Parse a single element using the appropriate parser.
@@ -510,12 +505,12 @@ class ContentExtractor:
     
     def _clean_text(self, text: str) -> str:
         """Clean text content while preserving important formatting."""
-        base_parser = BaseParser()
-        return base_parser.clean_text(text)
+        parser = ContentParser()
+        return parser.clean_text(text)
     
-    def extract_from_url(self, url: str) -> List[ParseResult]:
-        """Extract and parse content from a URL."""
-        html = self._fetch_url(url)
+    async def extract_from_url(self, url: str) -> List[ParseResult]:
+        """Extract and parse content from a URL asynchronously."""
+        html = await self._fetch_url(url)
         return self.extract_from_html(html)
     
     def extract_from_html(self, html: str) -> List[ParseResult]:

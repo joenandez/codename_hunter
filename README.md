@@ -1,191 +1,180 @@
-# Codename Hunter
+# Hunter
 
-A powerful tool for extracting and enhancing markdown content from web pages.
+![Build Status](https://img.shields.io/github/workflow/status/joesuspense/hunter/CI?style=for-the-badge)
+![License](https://img.shields.io/github/license/joesuspense/hunter?style=for-the-badge)
+![PyPI](https://img.shields.io/pypi/v/hunter?style=for-the-badge)
+
+
+██╗  ██╗██╗   ██╗███╗   ██╗████████╗███████╗██████╗ 
+██║  ██║██║   ██║████╗  ██║╚══██╔══╝██╔════╝██╔══██╗
+███████║██║   ██║██╔██╗ ██║   ██║   █████╗  ██████╔╝
+██╔══██║██║   ██║██║╚██╗██║   ██║   ██╔══╝  ██╔══██╗
+██║  ██║╚██████╔╝██║ ╚████║   ██║   ███████╗██║  ██║
+╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+
+**Hunter** is a powerful Python tool designed to effortlessly extract and enhance Markdown content from web pages. Whether you're a developer, content creator, or documentation specialist, Hunter streamlines the process of converting web content into clean, well-formatted Markdown, complete with optional AI-powered enhancements.
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Development](#development)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-- 🔍 Smart content extraction from web pages
-- 🎨 Markdown formatting with code block language detection
-- 🤖 Optional AI-powered content enhancement
-- 📋 Clipboard integration
-- 📊 Progress tracking
-- 🎯 Rich console output
+- 🔍 **Smart Content Extraction**: Seamlessly extract structured content (headings, paragraphs, lists, code blocks, links, images) from any web page
+- 🤖 **AI-Powered Enhancement**: Optional integration with Together.ai to automatically refine and enhance Markdown formatting
+- 📋 **Clipboard Integration**: Instantly copy the processed Markdown content to your clipboard
+
+
 
 ## Installation
 
+### Prerequisites
+
+- Python 3.8+
+- pip (Python package installer)
+
+### Install from PyPI
+
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/codename_hunter.git
-cd codename_hunter
+pip install hunter
+```
 
-# Install in development mode
+### Install from Source
+
+```bash
+git clone https://github.com/joenandez/hunter.git
+cd hunter
 pip install -e .
-
-# Or install directly from git
-pip install git+https://github.com/yourusername/codename_hunter.git
 ```
 
 ## Usage
 
-Basic usage:
+Hunter provides a simple command-line interface to extract and enhance Markdown content from web pages.
+
+### Basic Usage
+
 ```bash
-# Process a URL (simplest form)
-hunter https://example.com
-
-# Alternative forms also supported:
-hunter url https://example.com
-hunter uri https://example.com
-
-# Or using Python module form
-python -m hunter https://example.com
-python -m hunter url https://example.com
-```
-
-Options:
-- `--no-enhance`: Disable AI enhancement
-- `--no-copy`: Disable clipboard copy
-
-Examples:
-```bash
-# Extract and format content (with defaults)
+# Extract and enhance content from a URL
 hunter https://example.com/article
 
-# Process without AI enhancement
+# Extract without AI enhancement
 hunter https://example.com/article --no-enhance
 
-# Process without copying to clipboard
+# Extract without copying to clipboard
 hunter https://example.com/article --no-copy
+```
 
+### Command Options
+
+- `--no-enhance`: Disable AI-powered content enhancement
+- `--no-copy`: Disable automatic copying to clipboard
+
+## Configuration
+
+Hunter uses environment variables and an optional `.env` file for configuration.
+
+### Together AI Configuration
+
+To enable AI-powered enhancements, you need a Together.ai API key.
+
+#### Method 1: Environment Variable (Recommended)
+
+```bash
+export TOGETHER_API_KEY='your_api_key_here'  # On Windows: set TOGETHER_API_KEY=your_api_key_here
+```
+
+#### Method 2: .env File
+
+Create a `.env` file in your working directory:
+
+```env
+TOGETHER_API_KEY=your_api_key_here
+```
+
+### Additional Settings
+
+```env
+# Model Selection
+TOGETHER_MODEL=mistralai/Mistral-7B-Instruct-v0.2
+
+# Token Limits
+TOGETHER_MAX_TOKENS=4000
+
+# Temperature Setting
+TOGETHER_TEMPERATURE=0.1
+
+# Output Format
+OUTPUT_FORMAT=markdown
+
+# Console Style (dark/light)
+CONSOLE_STYLE=dark
 ```
 
 ## Development
+
+### Setup Development Environment
+
+1. Clone the repository
+```bash
+git clone https://github.com/joesuspense/hunter.git
+cd hunter
+```
+
+2. Create a virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install development dependencies
+```bash
+pip install -e ".[dev]"
+```
 
 ### Project Structure
 
 ```
 hunter/
-├── __init__.py
-├── __main__.py     # Module execution entry point
-├── main.py         # Main entry point and CLI
-├── constants.py    # Configuration and constants
-├── formatters.py   # Content formatting
-├── parsers.py      # Content extraction
-└── utils.py        # Utilities and helpers
-
-tests/
-└── test_*.py       # Test files
+├── hunter/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── constants.py
+│   ├── formatters.py
+│   └── utils/
+│       ├── ai.py
+│       ├── errors.py
+│       ├── fetcher.py
+│       └── progress.py
+├── tests/
+│   ├── test_formatters.py
+│   └── test_utils.py
+├── README.md
+└── pyproject.toml
 ```
 
-### Architecture
+## Testing
 
-The project follows these key architectural patterns:
-1. Constants Separation
-2. Formatter Chain
-3. Parser Hierarchy
-4. Content Flow Pipeline
-5. Error Handling
-6. Progress Tracking
-7. AI Enhancement
-8. Testing Strategy
-9. CLI Interface
-10. Main Application Facade
-
-See `patterns.md` for detailed architecture documentation.
-
-### Running Tests
+Run the test suite:
 
 ```bash
-# Run all tests
 pytest
-
-# Run specific test file
-pytest tests/test_parsers.py
-
-# Run with coverage
-pytest --cov=src tests/
 ```
 
-### Contributing
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## Configuration
-
-There are three ways to configure your Together API key and other settings:
-
-### 1. Environment Variable (Highest Priority)
-```bash
-# Set for current session
-export TOGETHER_API_KEY='your_api_key'
-
-# Or add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
-echo 'export TOGETHER_API_KEY="your_api_key"' >> ~/.zshrc
-```
-
-### 2. Configuration Files
-The system checks configuration files in the following order:
-
-1. User config: `~/.config/hunter/config.ini`
-2. Local config: `./config/config.ini`
-3. Default config: `./config/config.ini.template`
-
-To set up your configuration:
-```bash
-# Option 1: User-specific configuration (recommended)
-mkdir -p ~/.config/hunter
-cp config/config.ini.template ~/.config/hunter/config.ini
-nano ~/.config/hunter/config.ini
-
-# Option 2: Local project configuration
-cp config/config.ini.template config/config.ini
-nano config/config.ini
-```
-
-### Configuration Priority
-1. Environment variables (highest priority)
-2. User config file (`~/.config/hunter/config.ini`)
-3. Local config file (`./config/config.ini`)
-4. Default config file (`./config/config.ini.template`)
-
-### Other Configuration Options
-All configuration options can be set via environment variables or config files:
-
-Environment Variables:
-- `TOGETHER_API_KEY`: Your Together.ai API key
-- `HUNTER_OUTPUT_FORMAT`: Output format (default: markdown)
-- `HUNTER_CONSOLE_STYLE`: Console theme (dark/light)
-
-Config File Sections:
-```ini
-[api]
-together_api_key = your_api_key
-
-[output]
-format = markdown
-style = dark
-```
-
-See `config/config.ini.template` for all configuration options and their documentation.
-
-## Performance
-
-Benchmarks for common operations:
-- Content extraction: ~1-2s
-- Markdown formatting: ~0.1s
-- AI enhancement: ~2-3s (when enabled)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT License - see LICENSE file for details.
-
-## Credits
-
-Built with:
-- [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
-- [Rich](https://rich.readthedocs.io/)
-- [Requests](https://requests.readthedocs.io/)
-- [PyPerClip](https://pypi.org/project/pyperclip/) 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

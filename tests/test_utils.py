@@ -1,14 +1,17 @@
 """Tests for utility functions."""
 import pytest
-from unittest.mock import patch, MagicMock
-from src.utils import (
+from unittest.mock import patch, MagicMock, PropertyMock
+from hunter.utils import (
     AIEnhancer,
     TokenInfo,
     HunterError,
-    fetch_url,
     validate_config,
-    ProgressManager
+    ProgressManager,
+    error_handler,
+    async_error_handler
 )
+from hunter.utils.fetcher import fetch_url_async
+import asyncio
 
 def test_token_info():
     """Test TokenInfo dataclass."""
@@ -17,51 +20,133 @@ def test_token_info():
     assert info.content_tokens == 80
     assert info.remaining_tokens == 900
 
+class TestErrorHandling:
+    """Test error handling utilities."""
+    
+    def test_hunter_error(self):
+        """Test HunterError exception."""
+        with pytest.raises(HunterError) as exc_info:
+            raise HunterError("Test error")
+        assert str(exc_info.value) == "Test error"
+    
+    def test_error_handler_success(self):
+        """Test error_handler with successful function."""
+        @error_handler
+        def successful_function():
+            return "success"
+        
+        assert successful_function() == "success"
+    
+    def test_error_handler_failure(self):
+        """Test error_handler with failing function."""
+        @error_handler
+        def failing_function():
+            raise ValueError("Test failure")
+        
+        with pytest.raises(HunterError) as exc_info:
+            failing_function()
+        assert "Test failure" in str(exc_info.value)
+    
+    @pytest.mark.asyncio
+    async def test_async_error_handler_success(self):
+        """Test async_error_handler with successful function."""
+        @async_error_handler
+        async def successful_async_function():
+            return "success"
+        
+        result = await successful_async_function()
+        assert result == "success"
+    
+    @pytest.mark.asyncio
+    async def test_async_error_handler_failure(self):
+        """Test async_error_handler with failing function."""
+        @async_error_handler
+        async def failing_async_function():
+            raise ValueError("Test failure")
+        
+        with pytest.raises(HunterError) as exc_info:
+            await failing_async_function()
+        assert "Test failure" in str(exc_info.value)
+    
+    @pytest.mark.asyncio
+    async def test_async_error_handler_cancellation(self):
+        """Test async_error_handler with cancellation."""
+        class TestClass:
+            def __init__(self):
+                self.default_return_value = "default"
+        
+        @async_error_handler
+        async def cancellable_function(self):
+            raise asyncio.CancelledError()
+        
+        test_instance = TestClass()
+        result = await cancellable_function(test_instance)
+        assert result == "default"
+    
+    @pytest.mark.asyncio
+    async def test_async_error_handler_keyboard_interrupt(self):
+        """Test async_error_handler with keyboard interrupt."""
+        @async_error_handler
+        async def interruptible_function():
+            raise KeyboardInterrupt()
+        
+        result = await interruptible_function()
+        assert result is None
+
 class TestAIEnhancer:
     """Test AIEnhancer class functionality."""
     
     def test_init_without_api_key(self):
         """Test initialization without API key."""
-        enhancer = AIEnhancer()
-        assert enhancer.api_key is None
+        with patch('hunter.utils.ai.TOGETHER_API_KEY', None):
+            enhancer = AIEnhancer()
+            assert enhancer.api_key is None
     
     def test_init_with_api_key(self):
         """Test initialization with API key."""
         enhancer = AIEnhancer(api_key="test_key")
         assert enhancer.api_key == "test_key"
     
-    def test_enhance_content_without_api_key(self):
+    @pytest.mark.asyncio
+    async def test_enhance_content_without_api_key(self):
         """Test content enhancement without API key."""
-        enhancer = AIEnhancer()
-        content = "Test content"
-        assert enhancer.enhance_content(content) == content
+        with patch('hunter.utils.ai.TOGETHER_API_KEY', None):
+            enhancer = AIEnhancer()
+            content = "Test content"
+            enhanced = await enhancer.enhance_content_async(content)
+            assert enhanced == content
     
-    def test_calculate_tokens(self):
-        """Test token calculation."""
+    def test_get_token_usage(self):
+        """Test token usage calculation."""
         enhancer = AIEnhancer()
-        text = "This is a test text"
-        token_info = enhancer.calculate_tokens(text)
-        assert token_info.total_tokens == 5
-        assert token_info.content_tokens == 5
-        assert token_info.remaining_tokens == 9995
+        response = {
+            "usage": {
+                "total_tokens": 100,
+                "completion_tokens": 80,
+            }
+        }
+        token_info = enhancer.get_token_usage(response)
+        assert token_info.total_tokens == 100
+        assert token_info.content_tokens == 80
 
 @pytest.mark.asyncio
 async def test_fetch_url():
     """Test URL fetching with mocked response."""
-    with patch('requests.get') as mock_get:
+    with patch('aiohttp.ClientSession.get') as mock_get:
         mock_response = MagicMock()
-        mock_response.text = "Test content"
-        mock_get.return_value = mock_response
+        mock_response.text = PropertyMock(return_value=asyncio.Future())
+        mock_response.text.return_value.set_result("Test content")
+        mock_get.return_value.__aenter__.return_value = mock_response
         
-        result = fetch_url("http://test.com")
+        result = await fetch_url_async("http://test.com")
         assert result == "Test content"
-        mock_get.assert_called_once_with("http://test.com")
 
-def test_fetch_url_error():
+@pytest.mark.asyncio
+async def test_fetch_url_error():
     """Test URL fetching with error."""
-    with patch('requests.get', side_effect=Exception("Network error")):
+    with patch('aiohttp.ClientSession.get', side_effect=Exception("Network error")):
         with pytest.raises(HunterError):
-            fetch_url("http://test.com")
+            await fetch_url_async("http://test.com")
 
 def test_validate_config():
     """Test configuration validation."""

@@ -1,3 +1,4 @@
+LICENSE
 README.md
 pyproject.toml
 hunter/__init__.py
@@ -6,7 +7,6 @@ hunter/constants.py
 hunter/formatters.py
 hunter/main.py
 hunter/parsers.py
-hunter/utils.py
 hunter.egg-info/PKG-INFO
 hunter.egg-info/SOURCES.txt
 hunter.egg-info/dependency_links.txt
@@ -14,6 +14,7 @@ hunter.egg-info/entry_points.txt
 hunter.egg-info/requires.txt
 hunter.egg-info/top_level.txt
 tests/__init__.py
+tests/test_async_operations.py
 tests/test_formatters.py
 tests/test_main.py
 tests/test_parsers.py
