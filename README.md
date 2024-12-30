@@ -169,11 +169,13 @@ pytest
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+This project is currently in a read-only state and is not accepting pull requests. However, we welcome:
+
+- Bug reports and feature requests through GitHub Issues
+- Questions and discussions in the Issues section
+- Using and forking the project for your own needs
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details about this policy and how to effectively report issues.
 
 ## License
 
