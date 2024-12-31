@@ -149,9 +149,10 @@ class HeadingParser(ContentParser):
         """
         level = int(element.name[1])
         content = self.formatter.clean_content(element.get_text())
+        markdown_heading = '#' * level + ' ' + content
         return ParseResult(
             content_type=ContentType.HEADING,
-            content=content,
+            content=markdown_heading,
             metadata={'level': level}
         )
 

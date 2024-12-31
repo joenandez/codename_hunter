@@ -221,3 +221,20 @@ class TestContentExtractor:
         assert 'Keep this' in ' '.join(texts)
         assert 'Skip this' not in ' '.join(texts)
         assert 'alert' not in ' '.join(texts)
+    
+    def test_extract_from_html_heading_formatting(self):
+        html = '''
+        <div>
+            <h1>Title 1</h1>
+            <h2>Title 2</h2>
+            <h3>Title 3</h3>
+        </div>
+        '''
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        # Verify heading formatting
+        headings = [r.content for r in results if r.content_type == ContentType.HEADING]
+        assert '# Title 1' in headings
+        assert '## Title 2' in headings
+        assert '### Title 3' in headings
