@@ -67,15 +67,87 @@ def parse_args() -> argparse.Namespace:
         argparse.Namespace: Parsed command line arguments
     """
     parser = argparse.ArgumentParser(
-        description="Extract and enhance markdown content from web pages."
+        description="""
+██╗  ██╗██╗   ██╗███╗   ██╗████████╗███████╗██████╗ 
+██║  ██║██║   ██║████╗  ██║╚══██╔══╝██╔════╝██╔══██╗
+███████║██║   ██║██╔██╗ ██║   ██║   █████╗  ██████╔╝
+██╔══██║██║   ██║██║╚██╗██║   ██║   ██╔══╝  ██╔══██╗
+██║  ██║╚██████╔╝██║ ╚████║   ██║   ███████╗██║  ██║
+╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+                                                    
+🎯 Hunter - Converts web pages to clean, well-formatted Markdown to make it easier to work with AI Code Editors.
+
+📝 Description:
+  This tool extracts content from web pages and converts it to markdown format.
+  It can optionally enhance the output using AI (requires Together.ai API key).
+
+🔑 API Key Configuration:
+  To enable AI enhancement, set your Together.ai API key using one of these methods:
+
+  1. Environment variable (recommended):
+     export TOGETHER_API_KEY='your_api_key_here'
+     # On Windows: set TOGETHER_API_KEY=your_api_key_here
+  
+  2. Create a .env file in your working directory:
+     TOGETHER_API_KEY=your_api_key_here
+
+  🌐 Get your API key at: https://api.together.xyz/settings/api-keys
+
+📋 Common Use Cases:
+  1. Basic usage (copies to clipboard):
+     hunter https://example.com
+
+  2. Save to default folder (hunter_docs):
+     hunter https://example.com -d
+
+  3. Save to custom folder:
+     hunter https://example.com -d my_docs
+
+  4. Save to custom folder without prompts:
+     hunter https://example.com -d my_docs --force-dir
+
+  5. Extract without AI or clipboard:
+     hunter https://example.com --no-enhance --no-copy
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="🎉 Happy hunting! For more information, visit: https://github.com/joenandez/codename_hunter"
     )
-    parser.add_argument("url", help="URL to process")
-    parser.add_argument("--no-enhance", action="store_true", help="Disable AI enhancement")
-    parser.add_argument("--no-copy", action="store_true", help="Disable clipboard copy")
-    parser.add_argument("-d", "--save-to-disk", nargs="?", const="hunter_docs", metavar="folder",
-                       help="Save markdown to disk in the specified folder (default: hunter_docs)")
-    parser.add_argument("--force-dir", action="store_true", 
-                       help="Create directory without prompting if it doesn't exist")
+    
+    # URL argument
+    parser.add_argument(
+        "url",
+        help="🌐 URL of the web page to process"
+    )
+    
+    # Output options group
+    output_group = parser.add_argument_group('📥 Output Options')
+    output_group.add_argument(
+        "-d", "--save-to-disk",
+        nargs="?",
+        const="hunter_docs",
+        metavar="folder",
+        help="💾 Save markdown to disk in the specified folder (default: hunter_docs)"
+    )
+    
+    output_group.add_argument(
+        "--force-dir",
+        action="store_true",
+        help="📁 Create output directory without prompting if it doesn't exist"
+    )
+    
+    # Processing options group
+    processing_group = parser.add_argument_group('⚙️ Processing Options')
+    processing_group.add_argument(
+        "--no-enhance",
+        action="store_true",
+        help="🚫 Disable AI enhancement (faster, but may result in less clean formatting)"
+    )
+    
+    processing_group.add_argument(
+        "--no-copy",
+        action="store_true",
+        help="📋 Disable automatic copying to clipboard"
+    )
     
     return parser.parse_args()
 
