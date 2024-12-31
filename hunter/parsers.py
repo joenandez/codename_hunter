@@ -412,9 +412,12 @@ class ParagraphParser(ContentParser):
         if not text:
             return None
             
+        # Add newlines around paragraph content for better spacing
+        formatted_text = f"\n{text}\n"
+            
         return ParseResult(
             content_type=ContentType.PARAGRAPH,
-            content=text
+            content=formatted_text
         )
 
 class ParserFactory:

@@ -155,6 +155,15 @@ class TestParagraphParser:
         element = create_element('<p>  </p>').p
         result = parser.parse(element)
         assert result is None
+    
+    def test_paragraph_spacing(self):
+        parser = ParagraphParser()
+        element = create_element('<p>Test paragraph content</p>').p
+        result = parser.parse(element)
+        assert result.content_type == ContentType.PARAGRAPH
+        assert result.content.startswith('\n')
+        assert result.content.endswith('\n')
+        assert result.content == '\nTest paragraph content\n'
 
 class TestParserFactory:
     def test_get_parser(self):
