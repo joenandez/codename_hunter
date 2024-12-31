@@ -5,12 +5,12 @@
 </p>
 
 ![Build Status](https://img.shields.io/github/actions/workflow/status/joenandez/codename_hunter/hunter-cicd.yml?branch=main&style=for-the-badge)
-![License](https://img.shields.io/github/license/joenandez/codename_hunter?style=for-the-badge)
+![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue?style=for-the-badge)
 ![Code Style](https://img.shields.io/badge/code%20style-flake8-black?style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/joenandez/codename_hunter/dev?style=for-the-badge)                                         
+![Last Commit](https://img.shields.io/github/last-commit/joenandez/codename_hunter/main?style=for-the-badge)                                         
 
-**Hunter** (package name: `codename_hunter`) makes it easy to convert any web page content into clean, well-formatted Markdown. I built this primarily as a way to pass web page content to AI Code Editing tools, but imagine it would be useful for other use cases as well.
+**Hunter** (package name: `codename_hunter`) makes it easy to convert any web page content into clean, well-formatted Markdown. Built primarily for passing web page content to AI Code Editing tools, but useful for any web content to Markdown conversion needs.
 
 ## Table of Contents
 
@@ -151,8 +151,8 @@ CONSOLE_STYLE=dark
 
 1. Clone the repository
 ```bash
-git clone https://github.com/joesuspense/hunter.git
-cd hunter
+git clone https://github.com/joenandez/codename_hunter.git
+cd codename_hunter
 ```
 
 2. Create a virtual environment
@@ -169,21 +169,31 @@ pip install -e ".[dev]"
 ### Project Structure
 
 ```
-hunter/
+codename_hunter/
 ├── hunter/
 │   ├── __init__.py
+│   ├── __main__.py
 │   ├── main.py
 │   ├── constants.py
 │   ├── formatters.py
+│   ├── parsers.py
 │   └── utils/
 │       ├── ai.py
 │       ├── errors.py
 │       ├── fetcher.py
 │       └── progress.py
 ├── tests/
+│   ├── test_parsers.py
 │   ├── test_formatters.py
 │   └── test_utils.py
+├── project_docs/      # Project documentation
+├── hunter_docs/       # Generated documentation
+├── assets/           # Project assets
+├── .github/          # GitHub configuration
 ├── README.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
 └── pyproject.toml
 ```
 
