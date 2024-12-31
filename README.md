@@ -15,7 +15,7 @@
 ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
                                                     
 
-**Hunter** is a powerful Python tool designed to effortlessly extract and enhance Markdown content from web pages. Whether you're a developer, content creator, or documentation specialist, Hunter streamlines the process of converting web content into clean, well-formatted Markdown, complete with optional AI-powered enhancements.
+**Hunter** makes it easy to convert any web page content into clean, well-formatted Markdown. I built this primarily as a way to pass web page content to AI Code Editing tools, but imagine it would be useful for other use cases as well.
 
 ## Table of Contents
 
@@ -30,12 +30,10 @@
 
 ## Features
 
-- 🔍 **Smart Content Extraction**: Seamlessly extract structured content (headings, paragraphs, lists, code blocks, links, images) from any web page
+- 🔍 **Smart Content Extraction**: Seamlessly extract structured content (headings, paragraphs, lists, code blocks, links, images) from any web page.
 - 🤖 **AI-Powered Enhancement**: Optional integration with Together.ai to automatically refine and enhance Markdown formatting
 - 📋 **Clipboard Integration**: Instantly copy the processed Markdown content to your clipboard
-- 💾 **File Saving**: Save extracted content to disk with automatic URL-based filenames and timestamps
-
-
+- 💾 **File Saving**: Save extracted content to disk with automatic URL-based filenames and timestamps - helpful when working with AI Code Editors that support file tagging for context.
 
 ## Installation
 
