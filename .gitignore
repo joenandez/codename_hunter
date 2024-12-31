@@ -10,6 +10,7 @@ __pycache__
 hunter/__pycache__/
 hunter.egg-info/
 test/__pycache__/
+hunter_docs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

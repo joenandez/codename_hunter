@@ -24,6 +24,7 @@ import sys
 import os
 import logging
 from rich.theme import Theme
+from datetime import datetime
 
 from hunter.constants import (
     TOGETHER_API_KEY,
@@ -71,10 +72,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("url", help="URL to process")
     parser.add_argument("--no-enhance", action="store_true", help="Disable AI enhancement")
     parser.add_argument("--no-copy", action="store_true", help="Disable clipboard copy")
+    parser.add_argument("-d", "--save-to-disk", nargs="?", const="hunter_docs", metavar="folder",
+                       help="Save markdown to disk in the specified folder (default: hunter_docs)")
+    parser.add_argument("--force-dir", action="store_true", 
+                       help="Create directory without prompting if it doesn't exist")
     
     return parser.parse_args()
 
-async def process_url(url: str, no_enhance: bool, no_copy: bool, console: Console) -> None:
+async def process_url(url: str, no_enhance: bool, no_copy: bool, console: Console, 
+                save_to_disk: Optional[str] = None, force_dir: bool = False) -> None:
     """Process a URL asynchronously.
     
     Args:
@@ -82,6 +88,8 @@ async def process_url(url: str, no_enhance: bool, no_copy: bool, console: Consol
         no_enhance: Whether to skip AI enhancement
         no_copy: Whether to skip clipboard copy
         console: Rich console for output
+        save_to_disk: Optional folder path to save markdown file (None = don't save)
+        force_dir: Whether to create directory without prompting
     """
     try:
         # Extract content
@@ -106,8 +114,46 @@ async def process_url(url: str, no_enhance: bool, no_copy: bool, console: Consol
         # Display the result
         console.print(Markdown(content))
         
+        # Handle saving to disk if requested
+        if save_to_disk:
+            folder_path = Path(save_to_disk)
+            if not folder_path.exists():
+                if force_dir:
+                    logger.info(f"Creating directory: {folder_path}")
+                    folder_path.mkdir(parents=True, exist_ok=True)
+                else:
+                    # Prompt user for folder creation
+                    response = input(f"Folder '{save_to_disk}' does not exist. Create now? (Y/n): ").strip().lower()
+                    if response in ('', 'y', 'yes'):
+                        logger.info(f"Creating directory: {folder_path}")
+                        folder_path.mkdir(parents=True, exist_ok=True)
+                    else:
+                        logger.info("Skipping file save, copying to clipboard only")
+                        if not no_copy:
+                            pyperclip.copy(content)
+                            console.print("\n[green]✓[/green] Content has been copied to clipboard!")
+                        return
+
+            # Generate filename from URL
+            from urllib.parse import urlparse
+            parsed_url = urlparse(url)
+            base_name = parsed_url.netloc + parsed_url.path.replace('/', '-')
+            if base_name.endswith('-'):
+                base_name = base_name[:-1]
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            filename = f"{base_name}-{timestamp}.md"
+            file_path = folder_path / filename
+
+            # Add source link at the top
+            content_with_source = f"[Source: {url}]({url})\n\n{content}"
+            
+            # Save the file
+            logger.info(f"Saving content to: {file_path}")
+            file_path.write_text(content_with_source)
+            console.print(f"\n[green]✓[/green] Content saved to: {file_path}")
+        
         # Copy to clipboard by default unless disabled
-        if not no_copy:
+        if not no_copy and not save_to_disk:
             logger.debug("Copying content to clipboard")
             pyperclip.copy(content)
             console.print("\n[green]✓[/green] Content has been copied to clipboard!")
@@ -135,7 +181,14 @@ async def main_async() -> None:
         })
         console = Console(theme=theme)
         
-        await process_url(args.url, args.no_enhance, args.no_copy, console)
+        await process_url(
+            args.url, 
+            args.no_enhance, 
+            args.no_copy, 
+            console,
+            args.save_to_disk,
+            args.force_dir
+        )
         
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")

@@ -1,20 +1,16 @@
 # Hunter
 
-![Build Status](https://img.shields.io/github/actions/workflow/status/joenandez/codename_hunter/python-package.yml?style=for-the-badge)
+<p align="center">
+  <img src="assets/hunter-logo.png" alt="Hunter Logo" width="800"/>
+</p>
+
+![Build Status](https://img.shields.io/github/actions/workflow/status/joenandez/codename_hunter/hunter-cicd.yml?branch=main&style=for-the-badge)
 ![License](https://img.shields.io/github/license/joenandez/codename_hunter?style=for-the-badge)
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue?style=for-the-badge)
 ![Code Style](https://img.shields.io/badge/code%20style-flake8-black?style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/joenandez/codename_hunter?style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/joenandez/codename_hunter/dev?style=for-the-badge)                                         
 
-
-██╗  ██╗██╗   ██╗███╗   ██╗████████╗███████╗██████╗ 
-██║  ██║██║   ██║████╗  ██║╚══██╔══╝██╔════╝██╔══██╗
-███████║██║   ██║██╔██╗ ██║   ██║   █████╗  ██████╔╝
-██╔══██║██║   ██║██║╚██╗██║   ██║   ██╔══╝  ██╔══██╗
-██║  ██║╚██████╔╝██║ ╚████║   ██║   ███████╗██║  ██║
-╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
-
-**Hunter** is a powerful Python tool designed to effortlessly extract and enhance Markdown content from web pages. Whether you're a developer, content creator, or documentation specialist, Hunter streamlines the process of converting web content into clean, well-formatted Markdown, complete with optional AI-powered enhancements.
+**Hunter** (package name: `codename_hunter`) makes it easy to convert any web page content into clean, well-formatted Markdown. I built this primarily as a way to pass web page content to AI Code Editing tools, but imagine it would be useful for other use cases as well.
 
 ## Table of Contents
 
@@ -29,11 +25,10 @@
 
 ## Features
 
-- 🔍 **Smart Content Extraction**: Seamlessly extract structured content (headings, paragraphs, lists, code blocks, links, images) from any web page
+- 🔍 **Smart Content Extraction**: Seamlessly extract structured content (headings, paragraphs, lists, code blocks, links, images) from any web page.
 - 🤖 **AI-Powered Enhancement**: Optional integration with Together.ai to automatically refine and enhance Markdown formatting
 - 📋 **Clipboard Integration**: Instantly copy the processed Markdown content to your clipboard
-
-
+- 💾 **File Saving**: Save extracted content to disk with automatic URL-based filenames and timestamps - helpful when working with AI Code Editors that support file tagging for context.
 
 ## Installation
 
@@ -45,7 +40,7 @@
 ### Install from PyPI
 
 ```bash
-pip install hunter
+pip install codename_hunter  # Installs as 'hunter' command-line tool
 ```
 
 ### Install from Source
@@ -56,6 +51,18 @@ cd codename_hunter
 pip install -e .
 ```
 
+### Package Name Note
+
+While the package is named `codename_hunter` on PyPI, you'll use it simply as `hunter` in your terminal:
+
+```bash
+# Install the package
+pip install codename_hunter
+
+# Use the tool
+hunter https://example.com/article
+```
+
 ## Usage
 
 Hunter provides a simple command-line interface to extract and enhance Markdown content from web pages.
@@ -63,18 +70,31 @@ Hunter provides a simple command-line interface to extract and enhance Markdown 
 ### Basic Usage
 
 ```bash
-# Extract and enhance content from a URL
+# Extract and enhance content from a URL (copies to clipboard)
 hunter https://example.com/article
+
+# Save output to disk (defaults to "hunter_docs" folder)
+hunter https://example.com/article -d
+
+# Save to a custom folder
+hunter https://example.com/article -d custom_folder
+
+# Save to disk and force directory creation
+hunter https://example.com/article -d custom_folder --force-dir
 
 # Extract without AI enhancement
 hunter https://example.com/article --no-enhance
 
 # Extract without copying to clipboard
 hunter https://example.com/article --no-copy
+
+
 ```
 
 ### Command Options
 
+- `-d/--save-to-disk [folder]`: Save output to disk (defaults to "hunter_docs")
+- `--force-dir`: Create output directory without prompting
 - `--no-enhance`: Disable AI-powered content enhancement
 - `--no-copy`: Disable automatic copying to clipboard
 
