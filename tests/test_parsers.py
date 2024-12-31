@@ -28,7 +28,7 @@ class TestHeadingParser:
         element = create_element('<h1>Test Heading</h1>').h1
         result = parser.parse(element)
         assert result.content_type == ContentType.HEADING
-        assert result.content == 'Test Heading'
+        assert result.content == '# Test Heading'
         assert result.metadata['level'] == 1
 
 class TestCodeBlockParser:
@@ -148,7 +148,7 @@ class TestParagraphParser:
         element = create_element('<p>Test paragraph content</p>').p
         result = parser.parse(element)
         assert result.content_type == ContentType.PARAGRAPH
-        assert result.content == 'Test paragraph content'
+        assert result.content == '\nTest paragraph content\n'
     
     def test_parse_empty(self):
         parser = ParagraphParser()

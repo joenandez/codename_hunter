@@ -382,10 +382,8 @@ class ListParser(ContentParser):
 class ParagraphParser(ContentParser):
     """Parser for paragraph elements.
     
-    This parser handles general paragraph content, ensuring proper:
-    - Text cleaning
-    - Whitespace handling
-    - Empty paragraph filtering
+    This parser handles standard paragraph content, cleaning and formatting
+    the text appropriately.
     """
     
     def can_parse(self, element: Tag) -> bool:
@@ -399,25 +397,28 @@ class ParagraphParser(ContentParser):
         """
         return element.name == 'p'
     
-    def parse(self, element: Tag) -> ParseResult:
+    def parse(self, element: Tag) -> Optional[ParseResult]:
         """Parse a paragraph element.
         
+        Extracts and cleans the text content. Returns None for empty paragraphs.
+        Adds newlines around paragraph content for proper markdown spacing.
+        
         Args:
-            element: Paragraph element to parse
+            element: BeautifulSoup paragraph element
             
         Returns:
-            ParseResult: Formatted paragraph content or None if empty
+            ParseResult: Parsed paragraph content or None if empty
         """
-        text = self.formatter.clean_content(element.get_text())
-        if not text:
+        content = self.formatter.clean_content(element.get_text())
+        if not content.strip():
             return None
             
-        # Add newlines around paragraph content for better spacing
-        formatted_text = f"\n{text}\n"
+        # Add newlines for proper markdown paragraph spacing
+        formatted_content = f"\n{content.strip()}\n"
             
         return ParseResult(
             content_type=ContentType.PARAGRAPH,
-            content=formatted_text
+            content=formatted_content
         )
 
 class ParserFactory:
