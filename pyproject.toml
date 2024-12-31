@@ -3,7 +3,7 @@ requires = ["setuptools>=64.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hunter"
+name = "codename_hunter"
 version = "0.1.0"
 description = "A powerful tool for extracting and enhancing markdown content from web pages"
 readme = "README.md"

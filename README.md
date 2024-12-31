@@ -4,13 +4,13 @@
   <img src="assets/hunter-logo.png" alt="Hunter Logo" width="800"/>
 </p>
 
-![Build Status](https://img.shields.io/github/actions/workflow/status/joenandez/codename_hunter/python-package.yml?branch=main&style=for-the-badge)
+![Build Status](https://img.shields.io/github/actions/workflow/status/joenandez/codename_hunter/hunter-cicd.yml?branch=main&style=for-the-badge)
 ![License](https://img.shields.io/github/license/joenandez/codename_hunter?style=for-the-badge)
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue?style=for-the-badge)
 ![Code Style](https://img.shields.io/badge/code%20style-flake8-black?style=for-the-badge)
 ![Last Commit](https://img.shields.io/github/last-commit/joenandez/codename_hunter/dev?style=for-the-badge)                                         
 
-**Hunter** makes it easy to convert any web page content into clean, well-formatted Markdown. I built this primarily as a way to pass web page content to AI Code Editing tools, but imagine it would be useful for other use cases as well.
+**Hunter** (package name: `codename_hunter`) makes it easy to convert any web page content into clean, well-formatted Markdown. I built this primarily as a way to pass web page content to AI Code Editing tools, but imagine it would be useful for other use cases as well.
 
 ## Table of Contents
 
@@ -40,7 +40,7 @@
 ### Install from PyPI
 
 ```bash
-pip install hunter
+pip install codename_hunter  # Installs as 'hunter' command-line tool
 ```
 
 ### Install from Source
@@ -49,6 +49,18 @@ pip install hunter
 git clone https://github.com/joenandez/codename_hunter.git
 cd codename_hunter
 pip install -e .
+```
+
+### Package Name Note
+
+While the package is named `codename_hunter` on PyPI, you'll use it simply as `hunter` in your terminal:
+
+```bash
+# Install the package
+pip install codename_hunter
+
+# Use the tool
+hunter https://example.com/article
 ```
 
 ## Usage
