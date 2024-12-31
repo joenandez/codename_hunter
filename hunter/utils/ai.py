@@ -76,14 +76,16 @@ class AIEnhancer:
             
             messages = [{
                 "role": "system",
-                "content": """You are a markdown formatting expert. Improve the formatting while preserving all information and links. Focus on:
-1. Consistent spacing between sections
-2. Beautiful list formatting
+                "content": """You are a markdown formatter. Your task is to improve readability while NEVER removing any content:
+1. Add consistent spacing between sections
+2. Format lists and code blocks correctly and beautifully
 3. Proper code block presentation
 4. Clear section hierarchy
-5. Clean link and inline code formatting
+5. Clear link and inline code formatting
+6. Preserve ALL original text, links, and code
+7. Keep the same document structure and hierarchy
 
-Return ONLY the raw markdown content."""
+Return the complete markdown content with NO content removed."""
             }, {
                 "role": "user",
                 "content": f"Here is the markdown content to improve:\n\n{content}"

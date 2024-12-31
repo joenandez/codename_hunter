@@ -53,6 +53,10 @@ def print_api_status(console: Console) -> None:
     """
     if TOGETHER_API_KEY:
         console.print("[green]✓ Together AI API key configured[/green]")
+        console.print("\nTo unset the API key if needed:")
+        console.print("1. Unix/macOS: unset TOGETHER_API_KEY")
+        console.print("2. Windows: set TOGETHER_API_KEY=")
+        console.print("3. Or delete the TOGETHER_API_KEY line from your .env file\n")
     else:
         console.print("[yellow]⚠️  Together AI API key not configured[/yellow]")
         console.print("\nTo configure the API key, either:")
@@ -84,11 +88,11 @@ def parse_args() -> argparse.Namespace:
 🔑 API Key Configuration:
   To enable AI enhancement, set your Together.ai API key using one of these methods:
 
-  1. Environment variable (recommended):
+  1. Environment variable (recommended, case-insensitive):
      export TOGETHER_API_KEY='your_api_key_here'
      # On Windows: set TOGETHER_API_KEY=your_api_key_here
-  
-  2. Create a .env file in your working directory:
+
+  2. Create a .env file in your working directory (case-insensitive):
      TOGETHER_API_KEY=your_api_key_here
 
   🌐 Get your API key at: https://api.together.xyz/settings/api-keys
@@ -178,8 +182,17 @@ async def process_url(url: str, no_enhance: bool, no_copy: bool, console: Consol
             print_api_status(console)
             if TOGETHER_API_KEY:
                 logger.info("Enhancing content with AI")
+                original_content = content  # Store original content
                 enhancer = AIEnhancer()
-                content = await enhancer.enhance_content_async(content)
+                enhanced_content = await enhancer.enhance_content_async(content)
+                
+                # Validate enhanced content length
+                if len(enhanced_content) < 0.9 * len(original_content):
+                    logger.warning("AI enhancement removed too much content, falling back to original")
+                    console.print("\n[yellow]⚠️  AI enhancement removed too much content, using original instead[/yellow]")
+                    content = original_content
+                else:
+                    content = enhanced_content
             else:
                 logger.warning("Skipping enhancement: No API key available")
         

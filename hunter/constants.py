@@ -57,11 +57,16 @@ def get_config_value(section: str, key: str, default: str = '') -> str:
     # 1. Check environment variable
     env_key = f"HUNTER_{section.upper()}_{key.upper()}"
     if section == 'api' and key == 'together_api_key':
+        # Check multiple case variations for API key
+        variations = ['TOGETHER_API_KEY', 'Together_Api_Key', 'together_api_key']
+        for var in variations:
+            if value := os.getenv(var):
+                return value
         env_key = 'TOGETHER_API_KEY'
     
     if value := os.getenv(env_key):
         return value
-    
+        
     # 2. Check config files in priority order
     config = configparser.ConfigParser()
     

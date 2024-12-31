@@ -112,6 +112,12 @@ To enable AI-powered enhancements, you need a Together.ai API key.
 export TOGETHER_API_KEY='your_api_key_here'  # On Windows: set TOGETHER_API_KEY=your_api_key_here
 ```
 
+To unset the API key:
+```bash
+unset TOGETHER_API_KEY  # On Unix/macOS
+set TOGETHER_API_KEY=   # On Windows
+```
+
 #### Method 2: .env File
 
 Create a `.env` file in your working directory:
