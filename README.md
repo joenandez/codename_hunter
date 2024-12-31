@@ -13,6 +13,7 @@
 ██╔══██║██║   ██║██║╚██╗██║   ██║   ██╔══╝  ██╔══██╗
 ██║  ██║╚██████╔╝██║ ╚████║   ██║   ███████╗██║  ██║
 ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+                                                    
 
 **Hunter** is a powerful Python tool designed to effortlessly extract and enhance Markdown content from web pages. Whether you're a developer, content creator, or documentation specialist, Hunter streamlines the process of converting web content into clean, well-formatted Markdown, complete with optional AI-powered enhancements.
 
@@ -32,6 +33,7 @@
 - 🔍 **Smart Content Extraction**: Seamlessly extract structured content (headings, paragraphs, lists, code blocks, links, images) from any web page
 - 🤖 **AI-Powered Enhancement**: Optional integration with Together.ai to automatically refine and enhance Markdown formatting
 - 📋 **Clipboard Integration**: Instantly copy the processed Markdown content to your clipboard
+- 💾 **File Saving**: Save extracted content to disk with automatic URL-based filenames and timestamps
 
 
 
@@ -63,18 +65,31 @@ Hunter provides a simple command-line interface to extract and enhance Markdown 
 ### Basic Usage
 
 ```bash
-# Extract and enhance content from a URL
+# Extract and enhance content from a URL (copies to clipboard)
 hunter https://example.com/article
+
+# Save output to disk (defaults to "hunter_docs" folder)
+hunter https://example.com/article -d
+
+# Save to a custom folder
+hunter https://example.com/article -d custom_folder
+
+# Save to disk and force directory creation
+hunter https://example.com/article -d custom_folder --force-dir
 
 # Extract without AI enhancement
 hunter https://example.com/article --no-enhance
 
 # Extract without copying to clipboard
 hunter https://example.com/article --no-copy
+
+
 ```
 
 ### Command Options
 
+- `-d/--save-to-disk [folder]`: Save output to disk (defaults to "hunter_docs")
+- `--force-dir`: Create output directory without prompting
 - `--no-enhance`: Disable AI-powered content enhancement
 - `--no-copy`: Disable automatic copying to clipboard
 
