@@ -11,6 +11,7 @@ hunter/__pycache__/
 hunter.egg-info/
 test/__pycache__/
 hunter_docs/
+test_local_venv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
