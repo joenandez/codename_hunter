@@ -247,3 +247,137 @@ class TestContentExtractor:
         assert '# Title 1' in headings
         assert '## Title 2' in headings
         assert '### Title 3' in headings
+
+    def test_main_content_detection_semantic_main(self):
+        """Test detection of content within semantic <main> tag."""
+        html = '''
+        <html>
+            <body>
+                <header>Skip this</header>
+                <main>
+                    <h1>Main Content</h1>
+                    <p>Important paragraph</p>
+                </main>
+                <footer>Skip this too</footer>
+            </body>
+        </html>
+        '''
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        content = ' '.join(r.content for r in results)
+        assert 'Main Content' in content
+        assert 'Important paragraph' in content
+        assert 'Skip this' not in content
+        assert 'Skip this too' not in content
+
+    def test_main_content_detection_by_id(self):
+        """Test detection of content using ID-based strategy."""
+        html = '''
+        <html>
+            <body>
+                <div>Skip this outer content</div>
+                <div id="main-wrap">
+                    <h1>Main Section</h1>
+                    <p>Content in main-wrap</p>
+                </div>
+                <div id="sidebar">Skip sidebar</div>
+            </body>
+        </html>
+        '''
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        content = ' '.join(r.content for r in results)
+        assert 'Main Section' in content
+        assert 'Content in main-wrap' in content
+        assert 'Skip this outer content' not in content
+        assert 'Skip sidebar' not in content
+
+    def test_main_content_detection_by_class(self):
+        """Test detection of content using class-based strategy."""
+        html = '''
+        <html>
+            <body>
+                <nav>Skip navigation</nav>
+                <div class="article-content">
+                    <h1>Article Title</h1>
+                    <p>Article content here</p>
+                </div>
+                <aside>Skip aside</aside>
+            </body>
+        </html>
+        '''
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        content = ' '.join(r.content for r in results)
+        assert 'Article Title' in content
+        assert 'Article content here' in content
+        assert 'Skip navigation' not in content
+        assert 'Skip aside' not in content
+
+    def test_main_content_detection_article_tag(self):
+        """Test detection of content using article tag fallback."""
+        html = '''
+        <html>
+            <body>
+                <header>Skip header</header>
+                <article>
+                    <h1>Blog Post</h1>
+                    <p>Blog content</p>
+                </article>
+                <footer>Skip footer</footer>
+            </body>
+        </html>
+        '''
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        content = ' '.join(r.content for r in results)
+        assert 'Blog Post' in content
+        assert 'Blog content' in content
+        assert 'Skip header' not in content
+        assert 'Skip footer' not in content
+
+    def test_main_content_detection_body_fallback(self):
+        """Test fallback to body when no main content area is found."""
+        html = '''
+        <html>
+            <body>
+                <h1>Page Title</h1>
+                <p>Simple page with no main content markers</p>
+            </body>
+        </html>
+        '''
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        content = ' '.join(r.content for r in results)
+        assert 'Page Title' in content
+        assert 'Simple page with no main content markers' in content
+
+    def test_main_content_detection_nested_structure(self):
+        """Test handling of deeply nested content structures."""
+        html = '''
+        <html>
+            <body>
+                <div class="wrapper">
+                    <div class="container">
+                        <main id="content">
+                            <article>
+                                <h1>Deep Content</h1>
+                                <p>Nested content here</p>
+                            </article>
+                        </main>
+                    </div>
+                </div>
+            </body>
+        </html>
+        '''
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        content = ' '.join(r.content for r in results)
+        assert 'Deep Content' in content
+        assert 'Nested content here' in content
