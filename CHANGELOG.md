@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2] - 2024-01-02
+
+### Fixed
+- Enhanced main content detection algorithm in HTML parser with multi-strategy approach:
+  - Added HTML5 semantic `<main>` tag support
+  - Improved detection using content-related IDs
+  - Added fallback strategies with class names and `<article>` tags
+  - Final fallback to `<body>` tag
+  - Added comprehensive test coverage
+
 ## [0.1.1] - 2024-01-02
 
 ### Fixed

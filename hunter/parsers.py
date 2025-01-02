@@ -535,15 +535,32 @@ class ContentExtractor:
         for element in soup.find_all(constants.SKIP_TAGS):
             element.decompose()
         
-        # Try to find main content area first
+        # Try to find main content area using multiple strategies
         main_content = None
-        for class_name in constants.MAIN_CONTENT_CLASSES:
-            main_content = soup.find(class_=class_name)
-            if main_content:
-                break
         
+        # 1. Try HTML5 semantic main tag
+        main_content = soup.find('main')
+        
+        # 2. If not found, try by ID containing 'main' or 'content'
+        if not main_content:
+            for element in soup.find_all(id=True):
+                if any(term in element.get('id', '').lower() for term in ['main', 'content', 'article']):
+                    main_content = element
+                    break
+        
+        # 3. If still not found, try by class names
+        if not main_content:
+            for class_name in constants.MAIN_CONTENT_CLASSES:
+                main_content = soup.find(class_=class_name)
+                if main_content:
+                    break
+        
+        # 4. If still not found, try article tag
+        if not main_content:
+            main_content = soup.find('article')
+            
         # Use main content if found, otherwise use whole body
-        content_root = main_content if main_content else soup
+        content_root = main_content if main_content else soup.find('body') or soup
         
         # Process main content elements
         for element in content_root.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre', 'code', 'ul', 'ol', 'a', 'img']):

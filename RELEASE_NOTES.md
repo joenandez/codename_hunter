@@ -1,15 +1,21 @@
-# Release v0.1.1
+# Release v0.1.2
 
-## Release Date
-2024-01-02
+**Release Date:** 2024-01-02
 
 ## Overview
-This is a patch release that fixes a critical package structure issue that prevented the package from being installed correctly via PyPI.
 
-## What's Changed
-### Fixed
-- Fixed package structure to properly include the `hunter.utils` subpackage when installing from PyPI
-- Updated package configuration in pyproject.toml to ensure all submodules are included in the distribution
+This release includes a bug fix to improve the main content detection algorithm in the HTML parser, making it more reliable across different website structures.
+
+## What's New
+
+### Bug Fixes
+- Enhanced main content detection algorithm in HTML parser:
+  - Implemented multi-strategy approach for finding main content area
+  - Added support for HTML5 semantic `<main>` tag
+  - Improved detection using IDs containing 'main', 'content', or 'article'
+  - Added fallback strategies using class names and `<article>` tags
+  - Final fallback to `<body>` tag when needed
+  - Added comprehensive test coverage for all detection strategies
 
 ## Dependencies
 No changes to dependencies in this release.
@@ -18,4 +24,4 @@ No changes to dependencies in this release.
 No known issues.
 
 ## Contributors
-- @joenandez 
+- Joe (@joenandez) - Bug fix implementation and testing 
