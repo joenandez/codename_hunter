@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.3] - 2024-01-01
+
+### Fixed
+- Fixed article parsing bug affecting content extraction
+
 ## [0.1.2] - 2024-01-02
 
 ### Fixed
