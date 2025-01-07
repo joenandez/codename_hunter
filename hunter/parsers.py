@@ -28,6 +28,7 @@ import aiohttp
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
+import re
 
 from hunter import constants
 from hunter.formatters import BaseFormatter, CodeFormatter, LinkFormatter
@@ -35,23 +36,12 @@ from hunter.utils.fetcher import fetch_url_async
 from hunter.utils.errors import HunterError, async_error_handler
 
 class ContentType(Enum):
-    """Types of content that can be parsed.
-    
-    This enum defines all supported content types for parsing. It extends the base
-    ContentType from constants to include additional types specific to parsing.
-    
-    Attributes:
-        HEADING: Section headings (h1-h6)
-        CODE_BLOCK: Programming code blocks
-        LIST: Ordered or unordered lists
-        PARAGRAPH: General paragraph content
-        LINK: Hyperlinks
-        IMAGE: Image elements
-    """
-    HEADING = constants.ContentType.HEADING.value
-    CODE_BLOCK = constants.ContentType.CODE_BLOCK.value
-    LIST = 'list'
-    PARAGRAPH = constants.ContentType.CONTENT.value
+    """Types of content that can be extracted."""
+    HEADING = 'heading'
+    PARAGRAPH = 'paragraph'
+    CODE_BLOCK = 'code_block'
+    LIST = 'list'  # For list containers
+    LIST_ITEM = 'list_item'  # For individual list items
     LINK = 'link'
     IMAGE = 'image'
 
@@ -475,56 +465,76 @@ class ContentExtractor:
     def __init__(self):
         """Initialize with parser factory."""
         self.parser_factory = ParserFactory()
+        self._seen_content = set()
+        self._last_heading_level = 0
+        self._section_stack = []
+        self.formatter = BaseFormatter()
     
-    @async_error_handler
-    async def _fetch_url(self, url: str) -> str:
-        """Fetch HTML content from a URL asynchronously.
+    def _is_duplicate(self, content: str) -> bool:
+        """Check if content has been seen before, with smart normalization.
         
         Args:
-            url: URL to fetch content from
+            content: Content to check for duplication
             
         Returns:
-            str: Raw HTML content
-            
-        Raises:
-            HunterError: If URL fetch fails
+            bool: True if content is a duplicate
         """
-        return await fetch_url_async(url)
-    
-    def _parse_element(self, element: Tag) -> Optional[ParseResult]:
-        """Parse a single element using the appropriate parser.
+        # Normalize content for comparison
+        normalized = ' '.join(content.lower().split())
+        
+        # Skip very short content
+        if len(normalized) < 5:
+            return False
+            
+        # Check if normalized content is a duplicate
+        if normalized in self._seen_content:
+            return True
+            
+        self._seen_content.add(normalized)
+        return False
+        
+    def _process_heading(self, element: Tag) -> Optional[ParseResult]:
+        """Process a heading element with proper section tracking.
         
         Args:
-            element: BeautifulSoup element to parse
+            element: Heading element to process
             
         Returns:
-            Optional[ParseResult]: Parsed content or None if parsing fails
+            Optional[ParseResult]: Parsed heading or None if duplicate
         """
-        parser = self.parser_factory.get_parser(element)
-        if parser:
-            try:
-                return parser.parse(element)
-            except Exception as e:
-                print(f"Warning: Failed to parse element {element.name}: {str(e)}")
-        return None
-    
-    def _clean_text(self, text: str) -> str:
-        """Clean text content while preserving important formatting."""
-        parser = ContentParser()
-        return parser.clean_text(text)
-    
-    async def extract_from_url(self, url: str) -> List[ParseResult]:
-        """Extract and parse content from a URL asynchronously."""
-        html = await self._fetch_url(url)
-        return self.extract_from_html(html)
-    
+        level = int(element.name[1])
+        text = self.formatter.clean_content(element.get_text(strip=True))
+        
+        if not text or self._is_duplicate(text):
+            return None
+            
+        # Handle section hierarchy
+        while self._section_stack and self._section_stack[-1] >= level:
+            self._section_stack.pop()
+        self._section_stack.append(level)
+        
+        # Get link if heading is wrapped in one
+        parent_link = element.find_parent('a')
+        if parent_link and parent_link.get('href'):
+            content = f"[{text}]({parent_link['href']})"
+        else:
+            content = f"{'#' * level} {text}"
+            
+        return ParseResult(
+            content_type=ContentType.HEADING,
+            content=content,
+            metadata={'level': level}
+        )
+        
     def extract_from_html(self, html: str) -> List[ParseResult]:
-        """Extract and parse content from HTML string."""
+        """Extract and parse content from HTML string using direct HTML to Markdown mapping."""
         soup = BeautifulSoup(html, 'html.parser')
         results: List[ParseResult] = []
+        self._seen_content = set()
+        self._section_stack = []
         
-        # Remove unwanted elements
-        for element in soup.find_all(['script', 'style', 'noscript', 'iframe']):
+        # Remove script, style, and navigation elements
+        for element in soup.find_all(['script', 'style', 'nav', 'header', 'footer', 'aside']):
             element.decompose()
             
         # Remove elements with skip classes/ids
@@ -532,48 +542,144 @@ class ContentExtractor:
             element.decompose()
         for element in soup.find_all(id=list(constants.SKIP_IDS)):
             element.decompose()
-        for element in soup.find_all(constants.SKIP_TAGS):
-            element.decompose()
-        
-        # Try to find main content area using multiple strategies
+            
+        # Try to find main content area
         main_content = None
         
-        # 1. Try HTML5 semantic main tag
-        main_content = soup.find('main')
+        # 1. Try article with prose class first (common in documentation sites)
+        main_content = soup.find('article', class_=lambda x: x and 'prose' in x)
         
-        # 2. If not found, try by ID containing 'main' or 'content'
+        # 2. Try HTML5 semantic main tag
+        if not main_content:
+            main_content = soup.find('main')
+            
+        # 3. Try by ID containing 'main' or 'content'
         if not main_content:
             for element in soup.find_all(id=True):
                 if any(term in element.get('id', '').lower() for term in ['main', 'content', 'article']):
                     main_content = element
                     break
-        
-        # 3. If still not found, try by class names
-        if not main_content:
-            for class_name in constants.MAIN_CONTENT_CLASSES:
-                main_content = soup.find(class_=class_name)
-                if main_content:
-                    break
-        
-        # 4. If still not found, try article tag
-        if not main_content:
-            main_content = soup.find('article')
-            
-        # Use main content if found, otherwise use whole body
+                    
+        # Use main content if found, otherwise use body
         content_root = main_content if main_content else soup.find('body') or soup
         
-        # Process main content elements
-        for element in content_root.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre', 'code', 'ul', 'ol', 'a', 'img']):
-            # Skip if element is empty or only contains whitespace
-            if not element.get_text(strip=True) and element.name not in ['img']:
-                continue
+        def process_element(element):
+            """Process a single element and its children."""
+            if isinstance(element, NavigableString):
+                if element.strip():
+                    text = self.formatter.clean_content(str(element))
+                    if not self._is_duplicate(text):
+                        return [ParseResult(
+                            content_type=ContentType.PARAGRAPH,
+                            content=text
+                        )]
+                return []
                 
-            # Skip if element is nested within a parent that will handle it
-            if element.parent and element.parent.name in ['pre', 'code'] and element.name in ['pre', 'code']:
-                continue
+            if not isinstance(element, Tag):
+                return []
+                
+            # Skip navigation and sidebar elements
+            if (element.get('role') == 'navigation' or 
+                element.get('aria-label') == 'Breadcrumb' or
+                any(cls in str(element.get('class', [])) for cls in ['sidebar', 'nav', 'navigation']) or
+                any(term in str(element.get('id', '')).lower() for term in ['sidebar', 'nav', 'navigation'])):
+                return []
+                
+            results = []
             
-            result = self._parse_element(element)
-            if result:
-                results.append(result)
+            # Handle headings with section tracking
+            if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+                heading_result = self._process_heading(element)
+                if heading_result:
+                    results.append(heading_result)
+                    
+            # Handle code blocks
+            elif element.name == 'pre' or (element.name == 'code' and element.parent.name != 'pre'):
+                code_text = element.get_text(strip=True)
+                if code_text and not self._is_duplicate(code_text):
+                    language = ''
+                    if element.get('class'):
+                        for cls in element.get('class'):
+                            if cls.startswith('language-'):
+                                language = cls.replace('language-', '')
+                                break
+                    results.append(ParseResult(
+                        content_type=ContentType.CODE_BLOCK,
+                        content=f"\n```{language}\n{code_text}\n```\n",
+                        metadata={'language': language}
+                    ))
+                    
+            # Handle links
+            elif element.name == 'a':
+                href = element.get('href', '')
+                text = element.get_text(strip=True)
+                if href and text and not href.startswith('#'):
+                    link_content = f"[{text}]({href})"
+                    if not self._is_duplicate(link_content):
+                        results.append(ParseResult(
+                            content_type=ContentType.LINK,
+                            content=link_content,
+                            metadata={'url': href, 'text': text}
+                        ))
+                        
+            # Handle lists
+            elif element.name in ['ul', 'ol']:
+                items = []
+                for i, item in enumerate(element.find_all('li', recursive=False), 1):
+                    prefix = '- ' if element.name == 'ul' else f"{i}. "
+                    text = item.get_text(strip=True)
+                    if text and not self._is_duplicate(text):
+                        items.append(f"{prefix}{text}")
+                if items:
+                    list_content = '\n'.join(items) + '\n'
+                    results.append(ParseResult(
+                        content_type=ContentType.LIST,
+                        content=list_content,
+                        metadata={'ordered': element.name == 'ol'}
+                    ))
+                        
+            # Handle paragraphs and other text containers
+            elif element.name in ['p', 'div', 'section', 'article']:
+                direct_text = ''.join(
+                    str(c) for c in element.children 
+                    if isinstance(c, NavigableString) and c.strip()
+                )
+                if direct_text.strip() and not self._is_duplicate(direct_text):
+                    results.append(ParseResult(
+                        content_type=ContentType.PARAGRAPH,
+                        content=f"\n{self.formatter.clean_content(direct_text)}\n"
+                    ))
+                    
+            # Process children for container elements
+            if element.name not in ['pre', 'code']:
+                for child in element.children:
+                    results.extend(process_element(child))
+                    
+            return results
+            
+        # Process only the main content area
+        results = process_element(content_root)
         
+        # Post-process to handle inline code
+        for result in results:
+            if result.content_type == ContentType.PARAGRAPH:
+                # Convert `text` patterns to proper inline code
+                result.content = re.sub(r'`([^`]+)`', r'\\`\1\\`', result.content)
+                
         return results
+
+    @async_error_handler
+    async def extract_from_url(self, url: str) -> List[ParseResult]:
+        """Extract and parse content from a URL asynchronously.
+        
+        Args:
+            url: URL to fetch content from
+            
+        Returns:
+            List[ParseResult]: List of parsed content results
+            
+        Raises:
+            HunterError: If URL fetch or parsing fails
+        """
+        html = await fetch_url_async(url)
+        return self.extract_from_html(html)

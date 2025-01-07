@@ -200,7 +200,8 @@ class CodeFormatter(BaseFormatter):
         """
         # Clean the code while preserving structure
         lines = code.splitlines()
-        # Find the minimum indentation level
+        
+        # Find the minimum indentation level (ignoring empty lines)
         min_indent = float('inf')
         for line in lines:
             if line.strip():  # Only consider non-empty lines
@@ -222,8 +223,17 @@ class CodeFormatter(BaseFormatter):
         # Clean the code further while preserving structure
         cleaned_code = self.clean_content(cleaned_code, preserve_structure=True)
         
+        # Count backticks in code to determine fence length
+        max_backticks = 0
+        for line in cleaned_code.splitlines():
+            backtick_count = line.count('`')
+            max_backticks = max(max_backticks, backtick_count)
+            
+        # Use a fence with more backticks than any line in the code
+        fence = '`' * (max_backticks + 1) if max_backticks > 2 else '```'
+        
         # Add code fence with language
-        return f"\n```{language}\n{cleaned_code}\n```\n"
+        return f"\n{fence}{language}\n{cleaned_code}\n{fence}\n"
 
 class LinkFormatter(BaseFormatter):
     """Handles link and image formatting in markdown.
@@ -248,7 +258,21 @@ class LinkFormatter(BaseFormatter):
         """
         href = element.get('href', '')
         text = self.clean_content(element.get_text(strip=True))
-        return f" [{text}]({href}) " if href and text else text
+        
+        # Skip empty or anchor-only links
+        if not href or href.startswith('#'):
+            return text
+            
+        # Handle section references (common in documentation)
+        if href.startswith('/') and '#' in href:
+            base_url = element.get('data-base-url', '')  # Some docs include base URL
+            href = base_url + href if base_url else href
+            
+        # Escape any backticks in link text
+        text = text.replace('`', '\\`')
+        
+        # Return with spaces for backward compatibility
+        return f" [{text}]({href}) "
 
     def format_image(self, element: Tag) -> str:
         """Format images with proper markdown syntax and attributes.

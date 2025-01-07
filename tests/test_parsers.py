@@ -381,3 +381,40 @@ class TestContentExtractor:
         content = ' '.join(r.content for r in results)
         assert 'Deep Content' in content
         assert 'Nested content here' in content
+
+    def test_article_content_extraction(self):
+        """Test that content within article tags is properly extracted."""
+        html = """
+        <html>
+            <body>
+                <article class="prose prose-neutral dark:prose-invert !mt-0 !max-w-none md:w-[calc(100%-300px)] l:w-[700px]">
+                    Direct article text here
+                    <p>Paragraph inside article</p>
+                    <div>
+                        Direct div text
+                        <p>Paragraph inside div</p>
+                    </div>
+                    More article text
+                    <section>
+                        Section text
+                        <p>Paragraph inside section</p>
+                    </section>
+                </article>
+            </body>
+        </html>
+        """
+        
+        extractor = ContentExtractor()
+        results = extractor.extract_from_html(html)
+        
+        # Convert results to plain text for easier assertion
+        extracted_text = '\n'.join(r.content.strip() for r in results)
+        
+        # Check that all content is captured
+        assert "Direct article text here" in extracted_text
+        assert "Paragraph inside article" in extracted_text
+        assert "Direct div text" in extracted_text
+        assert "Paragraph inside div" in extracted_text
+        assert "More article text" in extracted_text
+        assert "Section text" in extracted_text
+        assert "Paragraph inside section" in extracted_text
